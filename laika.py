@@ -25,5 +25,7 @@ if __name__ == "__main__":
 	print(sys.path)
 	for b in loadedBots:
 		print(b)
-		bot = irc.bot(b)
+		bot = irc.spawnBot(b)
 		bot.printData()
+		bot.connect()
+		bot.run()
