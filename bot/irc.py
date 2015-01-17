@@ -48,18 +48,18 @@ class spawnBot:
 				except:
 					pass
 			if not data.endswith("\r\n"): # If the message is incomplete
-				message = data.rstrip().split("\r\n")
-				for i in range(0,len(message)-1): # Loop for every element in data, except the last incomplete message
-					line = message[i].rstrip().split(' ')
+				message = data.split("\r\n")
+				for i in message[:-1]: # Loop for every element in data, except the last incomplete message
+					line = i.split(' ')
 					#print("LINE IS: ",line) ##DEBUG
 					if line[0] == "PING": # Respond to network PINGs
 						self.pong(line[1])
 				data='' # Empty buffer
-				data+=message[-1] # Add the incomplete message to buffer for next loop
+				data = message[-1] # Add the incomplete message to buffer for next loop
 			else: # Else we've received n number of complete messages
-				message = data.rstrip().split("\r\n")
+				message = data.split("\r\n")
 				for i in message:
-					line = i.rstrip().split(' ')
+					line = i.split(' ')
 					#print("ELSE LINE IS: ",line) ##DEBUG
 					if line[0] == "PING":
 						self.pong(line[1])
