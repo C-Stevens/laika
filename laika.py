@@ -22,10 +22,10 @@ def importBotConfigs():
 
 if __name__ == "__main__":
 	importBotConfigs()
-	print(sys.path)
+	#print(sys.path) ##DEBUG
 	for b in loadedBots:
-		print(b)
+		#print(b) ##DEBUG
 		bot = irc.spawnBot(b)
-		bot.printData()
+		#bot.printData() ##DEBUG
 		bot.connect()
 		bot.run()
