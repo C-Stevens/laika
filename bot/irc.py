@@ -2,12 +2,19 @@ import time
 import socket
 import sys
 import string
+import ssl
 
 class spawnBot:
 	def __init__(self, configFile):
 		# Initialize all the variables needed
 		self.configFile = configFile
-		self.socket = socket.socket()
+		if configFile.config['ssl'] is True:
+			self.socket = ssl.wrap_socket(socket.socket())
+		elif configFile.config['ssl'] is False:
+			self.socket = socket.socket()
+		else:
+			print("Unable to determine ssl preferences, defaulting to no ssl")
+			self.socket = socket.socket()
 		self.host = configFile.config['host']
 		self.port = configFile.config['port']
 		self.nick = configFile.config['nick']
@@ -36,7 +43,10 @@ class spawnBot:
 		while True:
 			data += self.socket.recv(1024).decode('utf-8')
 			if data: # TODO: Supress output if user specifies no verbosity
-				print(data)
+				try:
+					print(data)
+				except:
+					pass
 			if not data.endswith("\r\n"): # If the message is incomplete
 				message = data.rstrip().split("\r\n")
 				for i in range(0,len(message)-1): # Loop for every element in data, except the last incomplete message
