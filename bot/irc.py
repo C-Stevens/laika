@@ -31,19 +31,29 @@ class spawnBot:
 		self.socket.send(("PONG " + data + "\r\n").encode('utf-8'))
 	def run(self):
 		# Main loop for reading and parsing lines
-		buffer = ''
+		global data
+		data = ''
 		while True:
-			data = self.socket.recv(1024)
-			if data: # TODO: Suppress output if user specifies no verbosity
-				print(data.decode('utf-8'))
-			buffer = data.decode('utf-8').rstrip().split("\r\n")
-			#print("BUFFER: ",buffer) ##DEBUG
-			for i in buffer:
-			#	print("INDV LINE: ",buffer) ##DEBUG
-				line = i.split(' ')
-				if line[0] == "PING":
-					self.pong(line[1])
-			buffer=''
+			data += self.socket.recv(1024).decode('utf-8')
+			if data: # TODO: Supress output if user specifies no verbosity
+				print(data)
+			if not data.endswith("\r\n"): # If the message is incomplete
+				message = data.rstrip().split("\r\n")
+				for i in range(0,len(message)-1): # Loop for every element in data, except the last incomplete message
+					line = message[i].rstrip().split(' ')
+					#print("LINE IS: ",line) ##DEBUG
+					if line[0] == "PING": # Respond to network PINGs
+						self.pong(line[1])
+				data='' # Empty buffer
+				data+=message[-1] # Add the incomplete message to buffer for next loop
+			else: # Else we've received n number of complete messages
+				message = data.rstrip().split("\r\n")
+				for i in message:
+					line = i.rstrip().split(' ')
+					#print("ELSE LINE IS: ",line) ##DEBUG
+					if line[0] == "PING":
+						self.pong(line[1])
+					data = ''
 
 	def printData(self):
                 print(self.configFile.config)
