@@ -1,6 +1,7 @@
 import sys
 import os
 from bot import *
+from threading import Thread
 
 def importBotConfigs():
 	botPool= os.listdir('./config/')
@@ -22,10 +23,12 @@ def importBotConfigs():
 
 if __name__ == "__main__":
 	importBotConfigs()
-	#print(sys.path) ##DEBUG
+	threads = []
 	for b in loadedBots:
-		#print(b) ##DEBUG
 		bot = irc.spawnBot(b)
-		#bot.printData() ##DEBUG
 		bot.connect()
-		bot.run()
+		t = Thread(target=bot.run)
+		threads.append(t)
+		t.start()
+	for i in threads:
+		i.join()
