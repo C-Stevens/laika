@@ -48,12 +48,12 @@ class spawnBot:
 				except:
 					pass
 			message = data.split("\r\n")
-			for i in message[:-1]: # Loop for every element in data, except the last incomplete message
+			for i in message[:-1]: # The last element will always either be blank or incomplete
 				line = i.split(' ')
 				#print("LINE IS: ",line) ##DEBUG
 				if line[0] == "PING": # Respond to network PINGs
 					self.pong(line[1])
-			data = message[-1] # Add the incomplete message to buffer for next loop
+			data = message[-1] # Add either the blank element, or the incomplete message to data for next loop
 
 	def printData(self):
                 print(self.configFile.config)
