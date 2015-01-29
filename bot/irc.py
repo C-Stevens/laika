@@ -42,6 +42,9 @@ class spawnBot:
 		if line[0] == "PING": # First things first, respond to a network PING if one shows up
 			self.pong(line[1])
 		if line[1] == "PRIVMSG" and line[3].split(':')[-1].startswith(self.highlightChar): # Deal with bot highlights
+			except IndexError as e:
+				sys.stderr.write(e) # Write error
+				pass
 			print("OMG SOMEONE IS TALKING TO ME\r\n")
 	def run(self):
 		# Main loop for reading and parsing lines
