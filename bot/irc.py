@@ -41,11 +41,12 @@ class spawnBot:
 		# Deal with pre-split lines coming off the socket
 		if line[0] == "PING": # First things first, respond to a network PING if one shows up
 			self.pong(line[1])
-		if line[1] == "PRIVMSG" and line[3].split(':')[-1].startswith(self.highlightChar): # Deal with bot highlights
-			except IndexError as e:
-				sys.stderr.write(e) # Write error
-				pass
-			print("OMG SOMEONE IS TALKING TO ME\r\n")
+		try:
+			if line[1] == "PRIVMSG" and line[3].split(':')[-1].startswith(self.highlightChar): # Deal with bot highlights
+				print("OMG SOMEONE IS TALKING TO ME\r\n")
+		except IndexError as e:
+			sys.stderr.write(e) # Write error
+			pass
 	def run(self):
 		# Main loop for reading and parsing lines
 		global data
@@ -60,7 +61,7 @@ class spawnBot:
 			message = data.split("\r\n")
 			for i in message[:-1]: # The last element will always either be blank or incomplete
 				line = i.split(' ')
-				print("LINE IS: ",line) ##DEBUG
+				print("LINE IS: ",repr(line)) ##DEBUG
 				self.parse(line) # Send the line to be parsed
 			data = message[-1] # Add either the blank element, or the incomplete message to data for next loop
 
