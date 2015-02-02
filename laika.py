@@ -1,32 +1,17 @@
-import sys
 import os
-from bot import *
+import imp
+import bot
 from threading import Thread
 
-def importBotConfigs():
-	botPool= os.listdir('./config/')
-	badFilenames = []
-
-	for i in botPool: # Find all files that aren't .py and remove them
-		if not i.endswith('.py'):
-			badFilenames.append(i)
-	for i in badFilenames:
-		botPool.remove(i)
-
-	botPool = [ os.path.basename(f)[:-3] for f in botPool] # Strip extensions
-	global loadedBots
-
-	originalPath = sys.path[:]
-	sys.path.insert(0, 'config') # Configure sys path for importing
-	loadedBots = [__import__(x) for x in botPool] # Import the valid files
-	sys.path = originalPath # Reset sys path
-
 if __name__ == "__main__":
-	importBotConfigs()
+	bot_files = [os.path.abspath(os.path.join('./config', i)) for i in os.listdir('./config') if i.endswith('.py')]
+	bot_py = []
+	for i in bot_files:
+		bot_py.append(imp.load_source(os.path.splitext(os.path.basename(i))[0], i))
 	threads = []
-	for b in loadedBots:
-		bot = irc.spawnBot(b)
-		bot.connect()
+	for i in bot_py:
+		j = bot.irc.spawnBot(b)
+		j.connect()
 		t = Thread(target=bot.run)
 		threads.append(t)
 		t.start()
