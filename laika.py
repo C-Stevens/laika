@@ -10,7 +10,7 @@ if __name__ == "__main__":
 		bot_py.append(imp.load_source(os.path.splitext(os.path.basename(i))[0], i))
 	threads = []
 	for i in bot_py:
-		j = bot.irc.spawnBot(b)
+		j = bot.irc.spawnBot(i)
 		j.connect()
 		t = Thread(target=bot.run)
 		threads.append(t)
