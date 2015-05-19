@@ -13,7 +13,7 @@ class spawnBot:
 		elif configFile.config['ssl'] is False:
 			self.socket = socket.socket()
 		else:
-			print("Unable to determine ssl preferences, defaulting to no ssl")
+			print("Unable to determine ssl preferences, defaulting to no ssl") # TODO: Better error messages
 			self.socket = socket.socket()
 		self.host = configFile.config['host']
 		self.port = configFile.config['port']
@@ -39,10 +39,10 @@ class spawnBot:
 		self.socket.send(("PONG " + data + "\r\n").encode('utf-8'))
 	def parse(self, line):
 		# Deal with pre-split lines coming off the socket
-		if line[0] == "PING": # First things first, respond to a network PING if one shows up
+		if line[0] == "PING": # Respond to a network PING if one shows up
 			self.pong(line[1])
 		try:
-			if line[1] == "PRIVMSG" and line[3].split(':')[-1].startswith(self.highlightChar): # Deal with bot highlights
+			if line[1] == "PRIVMSG" and line[3].split(':')[-1].startswith(self.highlightChar): # Parse commands
 				print("OMG SOMEONE IS TALKING TO ME\r\n")
 		except IndexError as e:
 			sys.stderr.write(e) # Write error
@@ -65,5 +65,5 @@ class spawnBot:
 				self.parse(line) # Send the line to be parsed
 			data = message[-1] # Add either the blank element, or the incomplete message to data for next loop
 
-	def printData(self):
+	def printConfig(self):
                 print(self.configFile.config)
