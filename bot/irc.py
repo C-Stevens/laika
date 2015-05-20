@@ -39,34 +39,31 @@ class spawnBot:
 		self.socket.send(("PONG " + data + "\r\n").encode('utf-8'))
 	def parse(self, line):
 		# Deal with pre-split lines coming off the socket
-		if len(line) < 0: # Malformed line. Pass to avoid going out of bounds
+		if len(line) < 3: # Malformed line. Pass to avoid going out of bounds
 			pass
 		if line[0] == "PING": # Respond to a network PING if one shows up
 			self.pong(line[1])
-		if line[1] == "PRIVMSG": #and line[3].split(':')[-1].startswith(self.highlightChar): # Parse commands
+		if line[1] == "PRIVMSG":
 			firstWord = line[3].split(':')[1]
-			print("FIRST WORD IS: ",repr(firstWord))
-			if not len(firstWord) == 1 and firstWord.startswith(self.highlightChar):
+			if not len(firstWord) == 1 and firstWord.startswith(self.highlightChar): # Check for commands
 				print("OMG SOMEONE IS TALKING TO ME\r\n")
-			else:
-				print("just a !\r\n")
 	def run(self):
 		# Main loop for reading and parsing lines
-		global data
-		data = ''
+		global buffer
+		buffer = ''
 		while True:
-			data += self.socket.recv(1024).decode('utf-8')
+			buffer += self.socket.recv(1024).decode('utf-8')
 			#if data: # TODO: Supress output if user specifies no verbosity
 				#try:
 				#	print(data)
 				#except:
 				#	pass
-			message = data.split("\r\n")
+			message = buffer.split("\r\n")
 			for i in message[:-1]: # The last element will always either be blank or incomplete
 				line = i.split(' ')
 				print("LINE IS: ",repr(line)) ##DEBUG
 				self.parse(line) # Send the line to be parsed
-			data = message[-1] # Add either the blank element, or the incomplete message to data for next loop
+			buffer = message[-1] # Add either the blank element, or the incomplete message to data for next loop
 
 	def printConfig(self):
                 print(self.configFile.config)
