@@ -40,7 +40,7 @@ class spawnBot:
 	def parse(self, line):
 		# Deal with pre-split lines coming off the socket
 		if len(line) < 4: # Malformed line. Pass to avoid going out of bounds
-			pass
+			return
 		if line[0] == "PING": # Respond to a network PING if one shows up
 			self.pong(line[1])
 			return
