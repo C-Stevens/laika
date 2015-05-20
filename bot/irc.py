@@ -43,11 +43,12 @@ class spawnBot:
 			pass
 		if line[0] == "PING": # Respond to a network PING if one shows up
 			self.pong(line[1])
+			return
 		if line[1] == "PRIVMSG":
-			firstWord = line[3].split(':',1)
-			if len(firstWord) < 2:
+			firstWordSplit = line[3].split(':',1)
+			if len(firstWordSplit) < 2:
 				return
-			firstWord = firstWord[1]
+			firstWord = firstWordSplit[1]
 
 			if not len(firstWord) == 1 and firstWord.startswith(self.highlightChar): # Check for commands
 				print("OMG SOMEONE IS TALKING TO ME\r\n")
