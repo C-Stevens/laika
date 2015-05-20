@@ -14,7 +14,7 @@ if __name__ == "__main__":
 	for i in bot_py:
 		j = bot.irc.spawnBot(i)
 		j.connect()
-		t = Thread(target=bot.run)
+		t = Thread(target=j.run)
 		threads.append(t)
 		t.start()
 	for i in threads:
