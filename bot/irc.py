@@ -39,14 +39,17 @@ class spawnBot:
 		self.socket.send(("PONG " + data + "\r\n").encode('utf-8'))
 	def parse(self, line):
 		# Deal with pre-split lines coming off the socket
+		if len(line) < 0: # Malformed line. Pass to avoid going out of bounds
+			pass
 		if line[0] == "PING": # Respond to a network PING if one shows up
 			self.pong(line[1])
-		try:
-			if line[1] == "PRIVMSG" and line[3].split(':')[-1].startswith(self.highlightChar): # Parse commands
+		if line[1] == "PRIVMSG": #and line[3].split(':')[-1].startswith(self.highlightChar): # Parse commands
+			firstWord = line[3].split(':')[1]
+			print("FIRST WORD IS: ",repr(firstWord))
+			if not len(firstWord) == 1 and firstWord.startswith(self.highlightChar):
 				print("OMG SOMEONE IS TALKING TO ME\r\n")
-		except IndexError as e:
-			sys.stderr.write(e) # Write error
-			pass
+			else:
+				print("just a !\r\n")
 	def run(self):
 		# Main loop for reading and parsing lines
 		global data
