@@ -3,6 +3,8 @@ import socket
 import sys
 import string
 import ssl
+import os
+import imp
 
 class spawnBot:
 	def __init__(self, configFile):
@@ -22,6 +24,7 @@ class spawnBot:
 		self.userMode = configFile.config['userMode']
 		self.channels = configFile.config['channels']
 		self.highlightChar = configFile.config['highlightChar']
+		self.command_list = []
 	def connect(self):
 		# Establish an IRC connection
 		self.socket.connect((self.host, self.port))
@@ -37,26 +40,60 @@ class spawnBot:
 		# Properly respond to server PINGs
 		print("PING Received, sending PONG + ",data,"+\r\n") ##DEBUG
 		self.socket.send(("PONG " + data + "\r\n").encode('utf-8'))
+	def load_commands(self):
+		# Import all commands found in ./commands
+		command_paths = [os.path.abspath(os.path.join('./commands', i)) for i in os.listdir('./commands') if i.endswith('.py')]
+		for i in command_paths:
+			self.command_list.append(imp.load_source(os.path.splitext(os.path.basename(i))[0], i))
+		print("\t[!!!!!] loaded commands: ",self.command_list)
 	def parse(self, line):
 		# Deal with pre-split lines coming off the socket
-		if len(line) < 4: # Malformed line. Pass to avoid going out of bounds
-			return
-		if line[0] == "PING": # Respond to a network PING if one shows up
+		if line[0] == "PING": # Respond to a network PINGs
 			self.pong(line[1])
 			return
 		if line[1] == "PRIVMSG":
+			if len(line) < 4: # Malformed line. Pass to avoid going out of bounds
+				return
 			firstWordSplit = line[3].split(':',1)
-			if len(firstWordSplit) < 2:
+			if len(firstWordSplit) < 2: # Line split improperly on ':', discard
 				return
 			firstWord = firstWordSplit[1]
 
-			if not len(firstWord) == 1 and firstWord.startswith(self.highlightChar): # Check for commands
-				print("OMG SOMEONE IS TALKING TO ME\r\n")
-				print(">> Command is ",firstWord)
+			if len(firstWord) != 1 and firstWord.startswith(self.highlightChar): # Check for command words
+				line_info = {
+					'identd' : '',
+					'nick' : '',
+					'user' : '',
+					'host' : '',
+					'channel' : '',
+					'command' : '',
+					'args' : ''
+				}
+				if line[0].find('!~') != -1:
+					line_info['identd'] = False
+				else:
+					line_info['identd'] = True
+				if line_info['identd'] == True:
+					splitOn = '!'
+				elif line_info['identd'] == False:
+					splitOn = '!~'
+				line_info['nick'] = line[0].split(splitOn)[0]
+				line_info['user'] = line[0].split(splitOn)[1].split('@')[0]
+				line_info['host'] = line[0].split(splitOn)[1].split('@')[1]
+				line_info['channel'] = line[2]
+				line_info['command'] = firstWord
+				line_info['args'] = line[4:]
+					
+					
+				print("OMG SOMEONE IS TALKING TO ME\n") ##DEBUG
+				print(">> Command is ",firstWord) ##DEBUG
+				print("Here's the dict:\n") ##DEBUG
+				print(line_info)
 	def run(self):
-		# Main loop for reading and parsing lines
+		# Main loop for reading data off the socket
 		global buffer
 		buffer = ''
+		self.load_commands()
 		while True:
 			buffer += self.socket.recv(1024).decode('utf-8')
 			#if data: # TODO: Supress output if user specifies no verbosity
