@@ -12,7 +12,7 @@ if __name__ == "__main__":
 	print(bot_files) ##DEBUG
 	threads = []
 	for i in bot_py:
-		j = bot.irc.spawnBot(i)
+		j = bot.irc.bot(i)
 		j.connect()
 		t = Thread(target=j.run)
 		threads.append(t)
