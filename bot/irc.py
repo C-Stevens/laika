@@ -74,7 +74,6 @@ class bot:
 					if i.run_check(line_info) == 0:
 						print(i,"can take this command")
 						i.run(line_info,self.socketWrapper)
-
 	def run(self):
 		'''Main loop for reading data off the socket.'''
 		global buffer
@@ -95,8 +94,8 @@ class bot:
 				print("LINE IS: ",repr(line)) ##DEBUG
 				self.parse(line) # Send the line to be parsed
 			buffer = message[-1] # Add either the blank element, or the incomplete message to data for next loop
-
 	def printConfig(self):
+		'''Prints the object's loaded config for debug.'''
                 print(self.configFile.config)
                 
 class socketConnection:
