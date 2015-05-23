@@ -71,9 +71,15 @@ class bot:
 					
 				print("OMG SOMEONE IS TALKING TO ME\n") ##DEBUG
 				for i in self.command_list:
-					if i.run_check(line_info) == 0:
+					if self.run_check(i,line_info) == 0:
 						print(i,"can take this command")
 						i.run(line_info,self.socketWrapper)
+	def run_check(self, command, line_info):
+		'''Checks if the command is being called. Returns 0 if it's being called, 1 if not.'''
+		if line_info.command == command.config['command_str']:
+			return 0
+		else:
+			return 1
 	def run(self):
 		'''Main loop for reading data off the socket.'''
 		global buffer
@@ -96,7 +102,7 @@ class bot:
 			buffer = message[-1] # Add either the blank element, or the incomplete message to data for next loop
 	def printConfig(self):
 		'''Prints the object's loaded config for debug.'''
-                print(self.configFile.config)
+		print(self.configFile.config)
                 
 class socketConnection:
 	def __init__(self, socket):
