@@ -5,6 +5,7 @@ import string
 import ssl
 import os
 import imp
+from queue import Queue
 
 class bot:
 	def __init__(self, configFile):
@@ -16,7 +17,8 @@ class bot:
 		else:
 			print("Unable to determine ssl preferences, defaulting to no ssl") # TODO: Better error messages
 			self.socket = socket.socket()
-		self.socketWrapper = socketConnection(self.socket)
+		self.messageQueue = Queue()
+		self.socketWrapper = socketConnection(self.socket, self.messageQueue)
 		self.host = configFile.config['host']
 		self.port = configFile.config['port']
 		self.nick = configFile.config['nick']
@@ -24,6 +26,7 @@ class bot:
 		self.userMode = configFile.config['userMode']
 		self.channels = configFile.config['channels']
 		self.highlightChar = configFile.config['highlightChar']
+		self.authList = configFile.config['authList']
 		self.command_list = []
 	def connect(self):
 		'''Establish an IRC connection'''
@@ -65,6 +68,7 @@ class bot:
 				line_info.nick = line[0].split(splitOn)[0][1:]
 				line_info.user = line[0].split(splitOn)[1].split('@')[0]
 				line_info.hostname = line[0].split(splitOn)[1].split('@')[1]
+				line_info.msgType = line[1]
 				line_info.channel = line[2]
 				line_info.command = firstWord[1:]
 				line_info.args = line[4:]
@@ -77,42 +81,68 @@ class bot:
 	def run_check(self, command, line_info):
 		'''Checks if the command is being called. Returns 0 if it's being called, 1 if not.'''
 		if line_info.command == command.config['command_str']:
-			return 0
+			if command.config['auth'] is False:
+				return 0
+			elif command.config['auth'] is True and line_info.nick in self.authList:
+				return 0
+			else:
+				return 1
 		else:
 			return 1
-	def run(self):
-		'''Main loop for reading data off the socket.'''
-		global buffer
-		buffer = ''
-		self.load_commands()
-		self.socketWrapper.joinChannels(self.channels)
-		while True:
-			buffer += self.socket.recv(1024).decode('utf-8')
-			#self.socketWrapper.dumpSocketData()
-			#if data: # TODO: Supress output if user specifies no verbosity
-				#try:
-				#	print(data)
-				#except:
-				#	pass
-			message = buffer.split("\r\n")
-			for i in message[:-1]: # The last element will always either be blank or incomplete
-				line = i.split(' ')
-				print("LINE IS: ",repr(line)) ##DEBUG
-				self.parse(line) # Send the line to be parsed
-			buffer = message[-1] # Add either the blank element, or the incomplete message to data for next loop
 	def printConfig(self):
 		'''Prints the object's loaded config for debug.'''
 		print(self.configFile.config)
+	def run(self):
+		'''Main loop for reading data off the socket.'''
+		self.load_commands()
+		self.socketWrapper.joinChannels(self.channels)
+		while True:
+			print("--> Requesting socket data")
+			self.socketWrapper.readFromSocket()
+			while self.messageQueue.qsize() > 1: # Never touch last queue element, it will be cycled by readFromSocket()
+				line = self.messageQueue.get_nowait()
+				try: # TODO: better output printing
+					#print(line)
+					print(self.socketWrapper.readQueue(self.messageQueue))
+				except:
+					pass
+				if line is not '': # Ignore leftover items from split('\r\n')
+					line = line.split(' ')
+					self.parse(line)
                 
 class socketConnection:
-	def __init__(self, socket):
+	def __init__(self, socket, queue):
 		self.socket = socket
-	def dumpSocketData(self):
-		'''Print raw socket output to console for debug.'''
-		try:
-			print(self.socket.recv(1024).decode('utf-8'))
-		except:
-			pass
+		self.messageQueue = queue
+		self.buffer = ''
+	def readFromSocket(self):
+		'''Read from the socket and add new lines to the message queue to be parsed.'''
+		self.buffer = self.socket.recv(1024).decode('utf-8')
+		lines = self.buffer.split('\r\n')
+		if self.messageQueue.qsize() > 0:
+			_lastElementIndex = self.messageQueue.qsize()-1
+		else:
+			_lastElementIndex = 0
+		#print("DEBUG: qsize() = ",self.messageQueue.qsize())
+		#print("DEBUG: _lastElementIndex =",_lastElementIndex)
+		if self.messageQueue.empty() is False and self.messageQueue.queue[_lastElementIndex] != '': # Last item was an incomplete line
+			self.messageQueue.queue[_lastElementIndex] += lines[0] # Complete the line with the first data out of the socket
+			for i in range(0,len(lines)-1): # Add all the other line elements to the queue
+				#print("DEBUG: lines =",lines)
+				#print("DEBUG: putting lines[%d+1] which is %s",i,lines[i+1])
+				self.messageQueue.put(lines[i+1])
+			return
+		else:
+			for i in lines:
+				self.messageQueue.put(i)
+			return
+	def readQueue(self, messageQueue):
+		'''Safely assemble an array of queue items without popping anything off.'''
+		queue = ''
+		if messageQueue.empty() is False:
+			for i in range(messageQueue.qsize()-1,-1,-1): # Walk backwards through items
+				queue += messageQueue.queue[i]
+		return queue
 	def pong(self, host):
 		'''Properly respond to server PINGs.'''
 		print("PING Received, sending PONG + ",host,"+\r\n") ##DEBUG
@@ -135,6 +165,7 @@ class commandData:
 		self.hostname = ''
 		self.channel = ''
 		self.command = ''
+		self.msgType = ''
 		self.args = []
 	def printData(self):
 		''' Print out all held data for debug.'''
@@ -144,4 +175,5 @@ class commandData:
 		print("hostname :",self.hostname)
 		print("channel :",self.channel)
 		print("command :",self.command)
+		print("msgType :",self.msgType)
 		print("args :",self.args)
