@@ -17,6 +17,7 @@ class bot:
 		else:
 			print("Unable to determine ssl preferences, defaulting to no ssl") # TODO: Better error messages
 			self.socket = socket.socket()
+		self.socket.settimeout(600) # Default timeout is 10 minutes, can be changed here
 		self.messageQueue = Queue()
 		self.socketWrapper = socketConnection(self.socket, self.messageQueue)
 		self.host = configFile.config['host']
@@ -28,13 +29,6 @@ class bot:
 		self.highlightChar = configFile.config['highlightChar']
 		self.authList = configFile.config['authList']
 		self.command_list = []
-	def connect(self):
-		'''Establish an IRC connection'''
-		self.socket.connect((self.host, self.port))
-		time.sleep(0.2)
-		self.socket.send(("NICK " + self.nick + "\r\n").encode('utf-8'))
-		time.sleep(0.2)
-		self.socket.send(("USER " + self.ident + " " + self.userMode + " * :" + self.nick + "\r\n").encode('utf-8'))
 	def load_commands(self):
 		'''Import all commands found in ./commands.'''
 		command_paths = [os.path.abspath(os.path.join('./commands', i)) for i in os.listdir('./commands') if i.endswith('.py')]
@@ -95,15 +89,16 @@ class bot:
 	def run(self):
 		'''Main loop for reading data off the socket.'''
 		self.load_commands()
+		self.socketWrapper.connect(self.host, self.port, self.nick, self.ident, self.userMode)
 		self.socketWrapper.joinChannels(self.channels)
-		while True:
-			print("--> Requesting socket data")
-			self.socketWrapper.readFromSocket()
-			while self.messageQueue.qsize() > 1: # Never touch last queue element, it will be cycled by readFromSocket()
+		while self.socketWrapper.runState is True:
+			print("--> Requesting messages")
+			self.socketWrapper.buildMessageQueue()
+			while self.messageQueue.qsize() > 1: # Never touch last queue element, it will be cycled by buildMessageQueue()
 				line = self.messageQueue.get_nowait()
 				try: # TODO: better output printing
-					#print(line)
-					print(self.socketWrapper.readQueue(self.messageQueue))
+					print(line)
+					#print(self.socketWrapper.readQueue(self.messageQueue))
 				except:
 					pass
 				if line is not '': # Ignore leftover items from split('\r\n')
@@ -115,9 +110,18 @@ class socketConnection:
 		self.socket = socket
 		self.messageQueue = queue
 		self.buffer = ''
+		self.runState = ''
 	def readFromSocket(self):
-		'''Read from the socket and add new lines to the message queue to be parsed.'''
-		self.buffer = self.socket.recv(1024).decode('utf-8')
+		'''Reads and returns data out of the socket. Aborts the connection and runState if socket times out.'''
+		try:
+			return self.socket.recv(1024).decode('utf-8')
+		except socket.timeout:
+			print("Socket has timed out. Aborting.") # TODO: Better error printing
+			self.socket.close()
+			self.runState = False
+	def buildMessageQueue(self):
+		'''Builds a message queue or adds message to an existing queue from socket data.'''
+		self.buffer = self.readFromSocket()
 		lines = self.buffer.split('\r\n')
 		if self.messageQueue.qsize() > 0:
 			_lastElementIndex = self.messageQueue.qsize()-1
@@ -141,8 +145,16 @@ class socketConnection:
 		queue = ''
 		if messageQueue.empty() is False:
 			for i in range(messageQueue.qsize()-1,-1,-1): # Walk backwards through items
-				queue += messageQueue.queue[i]
+				queue += messageQueue.queue[i] + "\n" # Newline for readability and as a possible split point
 		return queue
+	def connect(self, host, port, nick, ident, userMode):
+		'''Establish an IRC connection'''
+		self.socket.connect((host, port))
+		time.sleep(0.2)
+		self.socket.send(("NICK " + nick + "\r\n").encode('utf-8'))
+		time.sleep(0.2)
+		self.socket.send(("USER " + ident + " " + userMode + " * :" + nick + "\r\n").encode('utf-8'))
+		self.runState = True
 	def pong(self, host):
 		'''Properly respond to server PINGs.'''
 		print("PING Received, sending PONG + ",host,"+\r\n") ##DEBUG
@@ -152,10 +164,21 @@ class socketConnection:
 		for i in channels:
 			self.socket.send(("JOIN " + i + "\r\n").encode('utf-8'))
 	def sendToChannel(self, channel, message):
-		''' Sends specified message to the specified channel.'''
+		'''Sends specified message to the specified channel.'''
 		if not channel.startswith("#"):
 			channel = "#" + channel
 		self.socket.send(("PRIVMSG " + channel + " :" + message + "\r\n").encode('utf-8'))
+	def quit(self, message=None):
+		'''Disconnects from the irc server with optional message.'''
+		if message is not None:
+			print("DEBUG: There's a message! it's :",message)
+			#self.socket.send(("QUIT :" + message + "\r\n").encode('utf-8'))
+			self.socket.send(("QUIT :bye\r\n").encode('utf-8'))
+		else:
+			print("DEBUG: No message :(")
+			self.socket.send(("QUIT\r\n").encode('utf-8'))
+		self.socket.close()
+		self.runState = False
 			
 class commandData:
 	def __init__(self):
