@@ -17,7 +17,7 @@ class bot:
 		else:
 			print("Unable to determine ssl preferences, defaulting to no ssl") # TODO: Better error messages
 			self.socket = socket.socket()
-		self.socket.settimeout(600) # Default timeout is 10 minutes, can be changed here
+		self.socket.settimeout(600) # Default timeout is 10 minutes. Can be changed here
 		self.messageQueue = Queue()
 		self.socketWrapper = socketConnection(self.socket, self.messageQueue)
 		self.host = configFile.config['host']
@@ -73,7 +73,7 @@ class bot:
 						print(i,"can take this command")
 						i.run(line_info,self.socketWrapper)
 	def run_check(self, command, line_info):
-		'''Checks if the command is being called. Returns 0 if it's being called, 1 if not.'''
+		'''Checks if the command being called is the command requested, and checks if user is allowed to call that command.'''
 		if line_info.command == command.config['command_str']:
 			if command.config['auth'] is False:
 				return 0
@@ -142,10 +142,10 @@ class socketConnection:
 			return
 	def readQueue(self, messageQueue):
 		'''Safely assemble an array of queue items without popping anything off.'''
-		queue = ''
+		queue = []
 		if messageQueue.empty() is False:
 			for i in range(messageQueue.qsize()-1,-1,-1): # Walk backwards through items
-				queue += messageQueue.queue[i] + "\n" # Newline for readability and as a possible split point
+				queue.append(messageQueue.queue[i])
 		return queue
 	def connect(self, host, port, nick, ident, userMode):
 		'''Establish an IRC connection'''
