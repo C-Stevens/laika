@@ -206,7 +206,7 @@ class socketConnection:
 		if password is not None:
 			self.socket.send(("NS IDENTIFY " + nick + " " + password + "\r\n").encode('utf-8'))
 		if waitForMask == True: # Halts further socket interaction until the bot is given its mask
-			while any("is now your hidden host (set by services.)" in i for i in self.readQueue(self.messageQueue)) is not True:
+			while any("is now your hidden host (set by services.)" in i for i in self.readQueue()) is not True:
 				self.buildMessageQueue()
 				time.sleep(2)
 
