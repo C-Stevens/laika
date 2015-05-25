@@ -117,7 +117,7 @@ class bot:
 				line = self.messageQueue.get_nowait()
 				#try: # TODO: better output printing
 					#print(line)
-					#print(self.socketWrapper.readQueue(self.messageQueue))
+					#print(self.socketWrapper.readQueue())
 				#except:
 				#	pass
 				if line is not '': # Ignore leftover items from split('\r\n')
@@ -159,12 +159,12 @@ class socketConnection:
 			for i in lines:
 				self.messageQueue.put(i)
 			return
-	def readQueue(self, messageQueue):
+	def readQueue(self):
 		'''Safely assemble an array of queue items without popping anything off.'''
 		queue = []
-		if messageQueue.empty() is False:
-			for i in range(messageQueue.qsize()-1,-1,-1): # Walk backwards through items
-				queue.append(messageQueue.queue[i])
+		if self.messageQueue.empty() is False:
+			for i in range(self.messageQueue.qsize()-1,-1,-1): # Walk backwards through items
+				queue.append(self.messageQueue.queue[i])
 		return queue
 	def connect(self, host, port, nick, ident, userMode):
 		'''Establish an IRC connection'''
@@ -206,7 +206,6 @@ class socketConnection:
 		if password is not None:
 			self.socket.send(("NS IDENTIFY " + nick + " " + password + "\r\n").encode('utf-8'))
 		if waitForMask == True: # Halts further socket interaction until the bot is given its mask
-			msgs = self.readQueue(self.messageQueue)
 			while any("is now your hidden host (set by services.)" in i for i in self.readQueue(self.messageQueue)) is not True:
 				self.buildMessageQueue()
 				time.sleep(2)
