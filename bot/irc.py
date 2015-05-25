@@ -23,6 +23,8 @@ class bot:
 		self.host = configFile.config['host']
 		self.port = configFile.config['port']
 		self.nick = configFile.config['nick']
+		self.nickPass = configFile.config['nickPass']
+		self.mask = configFile.config['mask']
 		self.ident = configFile.config['ident']
 		self.userMode = configFile.config['userMode']
 		self.channels = configFile.config['channels']
@@ -37,6 +39,7 @@ class bot:
 		print("\t[!!!!!] loaded commands: ",self.command_list) ##DEBUG
 	def parse(self, line):
 		'''Deal with pre-split lines coming off the socket.'''
+		line = line.split(' ')
 		if line[0] == "PING": # Respond to a network PINGs
 			self.socketWrapper.pong(line[1])
 			return
@@ -72,6 +75,17 @@ class bot:
 					if self.run_check(i,line_info) == 0:
 						print(i,"can take this command")
 						i.run(line_info,self.socketWrapper)
+		if line[1] == "NOTICE":
+			print("\t[!!!] Caught notice") ##DEBUG
+			if line[0][1:].find("NickServ!NickServ@services") != -1: # NickServ notice
+				print("\t[!!!] Caught ns") ##DEBUG
+				nmMessage = ' '.join(str(i) for i in line[3:])[1:] # Reconstruct message
+				if nmMessage.find("This nickname is registered.") != -1:
+					print("\t[!!!] Authing to nickserv") ##DEBUG
+					if self.mask is True:
+						self.socketWrapper.nsIdentify(self.nick, self.nickPass, True)
+					else:
+						self.socketWrapper.nsIdentify(self.nick, self.nickPass)
 	def run_check(self, command, line_info):
 		'''Checks if the command being called is the command requested, and checks if user is allowed to call that command.'''
 		if line_info.command == command.config['command_str']:
@@ -90,19 +104,24 @@ class bot:
 		'''Main loop for reading data off the socket.'''
 		self.load_commands()
 		self.socketWrapper.connect(self.host, self.port, self.nick, self.ident, self.userMode)
+		if self.nickPass is not None:
+			if self.mask is True:
+				self.socketWrapper.nsIdentify(self.nick, self.nickPass, True)
+			else:
+				self.socketWrapper.nsIdentify(self.nick, self.nickPass)
 		self.socketWrapper.joinChannels(self.channels)
 		while self.socketWrapper.runState is True:
 			print("--> Requesting messages")
 			self.socketWrapper.buildMessageQueue()
 			while self.messageQueue.qsize() > 1: # Never touch last queue element, it will be cycled by buildMessageQueue()
 				line = self.messageQueue.get_nowait()
-				try: # TODO: better output printing
-					print(line)
+				#try: # TODO: better output printing
+					#print(line)
 					#print(self.socketWrapper.readQueue(self.messageQueue))
-				except:
-					pass
+				#except:
+				#	pass
 				if line is not '': # Ignore leftover items from split('\r\n')
-					line = line.split(' ')
+					print(line)
 					self.parse(line)
                 
 class socketConnection:
@@ -173,13 +192,25 @@ class socketConnection:
 		if message is not None:
 			print("DEBUG: There's a message! it's :",message)
 			#self.socket.send(("QUIT :" + message + "\r\n").encode('utf-8'))
-			self.socket.send(("QUIT :bye\r\n").encode('utf-8'))
+			theMessage = ("QUIT " + message + "\r\n").encode('utf-8')
+			print("The message :",theMessage)
+			#print(("QUIT :" + message + "\r\n"))
+			self.socket.send(theMessage)
 		else:
 			print("DEBUG: No message :(")
 			self.socket.send(("QUIT\r\n").encode('utf-8'))
 		self.socket.close()
 		self.runState = False
-			
+	def nsIdentify(self, nick, password, waitForMask=False):
+		'''Identifies nick with NickServ.'''
+		if password is not None:
+			self.socket.send(("NS IDENTIFY " + nick + " " + password + "\r\n").encode('utf-8'))
+		if waitForMask == True: # Halts further socket interaction until the bot is given its mask
+			msgs = self.readQueue(self.messageQueue)
+			while any("is now your hidden host (set by services.)" in i for i in self.readQueue(self.messageQueue)) is not True:
+				self.buildMessageQueue()
+				time.sleep(2)
+
 class commandData:
 	def __init__(self):
 		self.identd = ''
