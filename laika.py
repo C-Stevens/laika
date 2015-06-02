@@ -1,6 +1,6 @@
 import os
 import imp
-import bot
+import src
 from threading import Thread
 
 if __name__ == "__main__":
@@ -12,7 +12,7 @@ if __name__ == "__main__":
 	print(bot_files) ##DEBUG
 	threads = []
 	for i in bot_py:
-		j = bot.irc.bot(i)
+		j = src.bot.bot(i)
 		t = Thread(target=j.run)
 		threads.append(t)
 		t.start()
