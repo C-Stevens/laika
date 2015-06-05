@@ -96,11 +96,13 @@ class socketConnection:
 		if password is not None:
 			self.socket.send(("NS IDENTIFY " + nick + " " + password + "\r\n").encode('utf-8'))
 		if waitForMask == True: # Halts further socket interaction until the bot is given its mask
-			_backoffMax = 90 # Maximum wait time (in seconds)
+			_backoffMax = 10 # Maximum wait time (in seconds)
 			_backoff = 1
 			while any("is now your hidden host (set by services.)" in i for i in self.readQueue()) is not True:
 				self.buildMessageQueue()
-				_backoff = min(_backoff * 2, _backoffMax)
+				print(self.readQueue())
+				_backoff = min(_backoff * 1.05, _backoffMax)
+				print("\t[!] Sleeping for " +str(_backoff) + " seconds")
 				time.sleep(_backoff)
 
 class commandData:
