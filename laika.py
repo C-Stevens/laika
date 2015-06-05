@@ -2,6 +2,7 @@ import os
 import imp
 import src
 from threading import Thread
+from _version import __version__
 
 if __name__ == "__main__":
 	bot_files = [os.path.abspath(os.path.join('./config', i)) for i in os.listdir('./config') if i.endswith('.py')]
