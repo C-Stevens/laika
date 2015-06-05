@@ -61,8 +61,23 @@ class socketConnection:
 		self.socket.send(("PONG " + host + "\r\n").encode('utf-8'))
 	def joinChannels(self, channels):
 		'''Join all channels in a given array.'''
-		for i in channels:
-			self.socket.send(("JOIN " + i + "\r\n").encode('utf-8'))
+		if type(channels) == list:
+			for i in channels:
+				if not i.startswith("#"):
+					i = "#" + i
+				self.socket.send(("JOIN " + i + "\r\n").encode('utf-8'))
+		elif type(channels) == str:
+			if not channels.startswith("#"):
+				channels = "#" + channels
+			self.socket.send(("JOIN " + channels + "\r\n").encode('utf-8'))
+	def partChannels(self, channel, message=None):
+		'''Leave a single channel with optional message.'''
+		if not channel.startswith("#"):
+			channel = "#" + channel
+		if message is not None:
+			self.socket.send(("PART " + channel + " :" + message + "\r\n").encode('utf-8'))
+		else:
+			self.socket.send(("PART " + channel + "\r\n").encode('utf-8'))
 	def sendToChannel(self, channel, message):
 		'''Sends specified message to the specified channel.'''
 		if not channel.startswith("#"):
@@ -71,14 +86,8 @@ class socketConnection:
 	def quit(self, message=None):
 		'''Disconnects from the irc server with optional message.'''
 		if message is not None:
-			print("DEBUG: There's a message! it's :",message)
-			#self.socket.send(("QUIT :" + message + "\r\n").encode('utf-8'))
-			theMessage = ("QUIT " + message + "\r\n").encode('utf-8')
-			print("The message :",theMessage)
-			#print(("QUIT :" + message + "\r\n"))
-			self.socket.send(theMessage)
+			self.socket.send(("QUIT :" + message + "\r\n").encode('utf-8'))
 		else:
-			print("DEBUG: No message :(")
 			self.socket.send(("QUIT\r\n").encode('utf-8'))
 		self.socket.close()
 		self.runState = False
