@@ -1,8 +1,11 @@
 def run(line_info, socket):
 	line_info.printData() ##DEBUG
-	channel = line_info.args[0]
-	quitMessage = " ".join(line_info.args[1:])
-	socket.partChannels(channel, quitMessage)
+	if line_info.args:
+		channel = line_info.args[0]
+		quitMessage = " ".join(line_info.args[1:])
+		socket.partChannels(channel, quitMessage)
+	else:
+		socket.partChannels(line_info.channel)
 
 config = {
 	'name' : 'Part',
