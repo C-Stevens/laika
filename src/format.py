@@ -49,5 +49,5 @@ def color(string, color="black", background=None):
 			return formatting["colorText"] + colors[color] + string + formatting["RESET"]
 		else:
 			return formatting["colorText"] + colors[color] + "," + colors[background] + string + formatting["RESET"]
-	except: # Catch invalid color names raising dict errors
+	except KeyError: # Catch invalid color names raising dict errors
 		return string
