@@ -1,11 +1,13 @@
-formats = {
+formatting = {
 	'bold'		:	'\x02',
 	'italic'	:	'\x1D',
 	'underline'	:	'\x1F',
 	'colorText'	:	'\x03',
 	'invert'	:	'\x16',
-	'RESET'		:	'\x0F',
-	
+	'RESET'		:	'\x0F'
+}
+
+colors = {
 	'white'		:	'00',
 	'black'		:	'01',
 	'blue'		:	'02',
@@ -26,26 +28,26 @@ formats = {
 
 def bold(string):
 	'''Returns input string as bold text.'''
-	return formats["bold"] + string + formats["RESET"]
+	return formatting["bold"] + string + formatting["RESET"]
 
 def italic(string):
 	'''Returns input string as italic text.'''
-	return formats["italic"] + string + formats["RESET"]
+	return formatting["italic"] + string + formatting["RESET"]
 
 def underline(string):
 	'''Returns input string as underline text.'''
-	return formats["underline"] + string + formats["RESET"]
+	return formatting["underline"] + string + formatting["RESET"]
 
 def invert(string):
 	'''Returns input string with reverse formatting.'''
-	return formats["invert"] + string + formats["RESET"]
+	return formatting["invert"] + string + formatting["RESET"]
 
 def color(string, color="black", background=None):
 	'''Returns input string with requesed color formatting.'''
 	try:
 		if background is None:
-			return formats["colorText"] + formats[color] + string + formats["RESET"]
+			return formatting["colorText"] + colors[color] + string + formatting["RESET"]
 		else:
-			return formats["colorText"] + formats[color] + "," + formats[background] + string + formats["RESET"]
+			return formatting["colorText"] + colors[color] + "," + colors[background] + string + formatting["RESET"]
 	except: # Catch invalid color names raising dict errors
 		return string
