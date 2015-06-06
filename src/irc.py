@@ -4,6 +4,7 @@ import sys
 import string
 import os
 from queue import Queue
+import src.format as format
                 
 class socketConnection:
 	def __init__(self, socket, queue):
@@ -102,8 +103,13 @@ class socketConnection:
 				self.buildMessageQueue()
 				print(self.readQueue())
 				_backoff = min(_backoff * 1.05, _backoffMax)
-				print("\t[!] Sleeping for " +str(_backoff) + " seconds")
+				print("\t[!] Sleeping for " +str(_backoff) + " seconds") ##DEBUG
 				time.sleep(_backoff)
+	def action(self, channel, action):
+		'''Issues an ACTION command to specified channel.'''
+		if not channel.startswith("#"):
+			channel = "#" + channel
+		self.socket.send(("PRIVMSG " + channel + " :\u0001ACTION " + action + "\u0001\r\n").encode('utf-8'))
 
 class commandData:
 	def __init__(self):
@@ -113,6 +119,7 @@ class commandData:
 		self.hostname = ''
 		self.channel = ''
 		self.command = ''
+		self.highlightChar = ''
 		self.msgType = ''
 		self.args = []
 	def printData(self):
@@ -123,5 +130,6 @@ class commandData:
 		print("hostname :",self.hostname)
 		print("channel :",self.channel)
 		print("command :",self.command)
+		print("highlightChar :",self.highlightChar)
 		print("msgType :",self.msgType)
 		print("args :",self.args)
