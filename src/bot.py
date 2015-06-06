@@ -3,6 +3,7 @@ import os
 import imp
 from queue import Queue
 import src.irc as irc
+import src.format as format
 import socket
 
 class bot:
@@ -69,14 +70,17 @@ class bot:
 				line_info.msgType = line[1]
 				line_info.channel = line[2]
 				line_info.command = firstWord[1:]
+				line_info.highlightChar = self.highlightChar
 				line_info.args = line[4:]
 					
-				print("OMG SOMEONE IS TALKING TO ME\n") ##DEBUG
-				print("\tCommand list :",self.command_list) ##DEBUG
 				for i in self.command_list:
 					if self.run_check(i,line_info) == 0:
-						print(i,"can take this command")
 						i.run(line_info,self.socketWrapper)
+						return
+					elif self.run_check(i, line_info) == 2:
+						self.socketWrapper.sendToChannel(line_info.channel, line_info.nick + ": You are not authorized to use the " + format.bold(line_info.command) + " command")
+						return
+				self.socketWrapper.sendToChannel(line_info.channel, line_info.nick + ": Command " + format.bold(line_info.command) + " not found")
 		if line[1] == "NOTICE":
 			print("\t[!!!] Caught notice") ##DEBUG
 			if line[0][1:].find("NickServ!NickServ@services") != -1: # NickServ notice
@@ -96,7 +100,7 @@ class bot:
 			elif command.config['auth'] is True and line_info.nick in self.authList:
 				return 0
 			else:
-				return 1
+				return 2
 		else:
 			return 1
 	def printConfig(self):
@@ -117,11 +121,9 @@ class bot:
 			self.socketWrapper.buildMessageQueue()
 			while self.messageQueue.qsize() > 1: # Never touch last queue element, it will be cycled by buildMessageQueue()
 				line = self.messageQueue.get_nowait()
-				#try: # TODO: better output printing
-					#print(line)
-					#print(self.socketWrapper.readQueue())
-				#except:
-				#	pass
 				if line is not '': # Ignore leftover items from split('\r\n')
-					print(line)
+					try: # TODO: Better output printing
+						print(line)
+					except:
+						pass
 					self.parse(line)
