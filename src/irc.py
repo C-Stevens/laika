@@ -111,25 +111,3 @@ class socketConnection:
 			channel = "#" + channel
 		self.socket.send(("PRIVMSG " + channel + " :\u0001ACTION " + action + "\u0001\r\n").encode('utf-8'))
 
-class commandData:
-	def __init__(self):
-		self.identd = ''
-		self.nick = ''
-		self.user = ''
-		self.hostname = ''
-		self.channel = ''
-		self.command = ''
-		self.highlightChar = ''
-		self.msgType = ''
-		self.args = []
-	def printData(self):
-		''' Print out all held data for debug.'''
-		print("identd :",self.identd)
-		print("nick :",self.nick)
-		print("user :",self.user)
-		print("hostname :",self.hostname)
-		print("channel :",self.channel)
-		print("command :",self.command)
-		print("highlightChar :",self.highlightChar)
-		print("msgType :",self.msgType)
-		print("args :",self.args)
