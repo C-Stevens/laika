@@ -4,6 +4,7 @@ import imp
 from queue import Queue
 import src.irc as irc
 import src.format as format
+import src.command as command
 import socket
 
 class bot:
@@ -20,6 +21,7 @@ class bot:
 		self.socket.settimeout(600) # Default timeout is 10 minutes. Can be changed here
 		self.messageQueue = Queue()
 		self.socketWrapper = irc.socketConnection(self.socket, self.messageQueue)
+		self.commandWrapper = command.commandManager()
 
 		self.host = configFile.config['host']
 		self.port = configFile.config['port']
@@ -54,7 +56,7 @@ class bot:
 			firstWord = firstWordSplit[1]
 
 			if len(firstWord) != 1 and firstWord.startswith(self.highlightChar): # Check for command words
-				line_info = irc.commandData()
+				line_info = command.commandData()
 				
 				if line[0].find('!~') != -1:
 					line_info.identd = False
@@ -72,19 +74,18 @@ class bot:
 				line_info.command = firstWord[1:]
 				line_info.highlightChar = self.highlightChar
 				line_info.args = line[4:]
-					
+								
 				for i in self.command_list:
 					if self.run_check(i,line_info) == 0:
-						i.run(line_info,self.socketWrapper)
+						self.commandWrapper.spawnThread(line_info, self.socketWrapper, i)
+						#print("\t[!] Threads for this nick:",self.commandWrapper.reportThreads(line_info.nick)) ##DEBUG
 						return
 					elif self.run_check(i, line_info) == 2:
 						self.socketWrapper.sendToChannel(line_info.channel, line_info.nick + ": You are not authorized to use the " + format.bold(line_info.command) + " command")
 						return
 				self.socketWrapper.sendToChannel(line_info.channel, line_info.nick + ": Command " + format.bold(line_info.command) + " not found")
 		if line[1] == "NOTICE":
-			print("\t[!!!] Caught notice") ##DEBUG
 			if line[0][1:].find("NickServ!NickServ@services") != -1: # NickServ notice
-				print("\t[!!!] Caught ns") ##DEBUG
 				nmMessage = ' '.join(str(i) for i in line[3:])[1:] # Reconstruct message
 				if nmMessage.find("This nickname is registered.") != -1:
 					print("\t[!!!] Authing to nickserv") ##DEBUG
