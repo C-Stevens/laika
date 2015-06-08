@@ -11,9 +11,9 @@ class bot:
 	def __init__(self, configFile):
 		self.configFile = configFile
 		
-		if configFile.config['ssl'] is True:
+		if configFile.config['server']['ssl'] is True:
 			self.socket = ssl.wrap_socket(socket.socket())
-		elif configFile.config['ssl'] is False:
+		elif configFile.config['server']['ssl'] is False:
 			self.socket = socket.socket()
 		else:
 			print("Unable to determine ssl preferences, defaulting to no ssl") # TODO: Better error messages
@@ -23,8 +23,9 @@ class bot:
 		self.socketWrapper = irc.socketConnection(self.socket, self.messageQueue)
 		self.commandWrapper = command.commandManager()
 
-		self.host = configFile.config['host']
-		self.port = configFile.config['port']
+		self.host = configFile.config['server']['host']
+		self.port = configFile.config['server']['port']
+		self.serverPass = configFile.config['server']['pass']
 		self.nick = configFile.config['nick']
 		self.nickPass = configFile.config['nickPass']
 		self.mask = configFile.config['mask']
@@ -42,7 +43,7 @@ class bot:
 			self.command_list.append(imp.load_source(os.path.splitext(os.path.basename(i))[0], i))
 		print("\t[!!!!!] loaded commands: ",self.command_list) ##DEBUG
 	def parse(self, line):
-		'''Deal with pre-split lines coming off the socket.'''
+		'''Deal with lines coming off the socket.'''
 		line = line.split(' ')
 		if line[0] == "PING": # Respond to a network PINGs
 			self.socketWrapper.pong(line[1])
@@ -60,12 +61,10 @@ class bot:
 				
 				if line[0].find('!~') != -1:
 					line_info.identd = False
+					splitOn = '!~'
 				else:
 					line_info.identd = True
-				if line_info.identd == True:
 					splitOn = '!'
-				elif line_info.identd == False:
-					splitOn = '!~'
 				line_info.nick = line[0].split(splitOn)[0][1:]
 				line_info.user = line[0].split(splitOn)[1].split('@')[0]
 				line_info.hostname = line[0].split(splitOn)[1].split('@')[1]
@@ -74,20 +73,19 @@ class bot:
 				line_info.command = firstWord[1:]
 				line_info.highlightChar = self.highlightChar
 				line_info.args = line[4:]
-								
+
 				for _command in self.command_list:
 					if self.run_check(_command,line_info) == 0:
 						self.commandWrapper.spawnThread(line_info, self.socketWrapper, _command)
-						#print("\t[!] Threads for this nick:",self.commandWrapper.reportThreads(line_info.nick)) ##DEBUG
 						return
 					elif self.run_check(_command, line_info) == 2:
-						self.socketWrapper.sendToChannel(line_info.channel, line_info.nick + ": You are not authorized to use the " + format.bold(line_info.command) + " command")
+						self.socketWrapper.notice(line_info.nick, "You are not authorized to use the "+format.bold(line_info.command)+" command")
 						return
-				self.socketWrapper.sendToChannel(line_info.channel, line_info.nick + ": Command " + format.bold(line_info.command) + " not found")
+				self.socketWrapper.notice(line_info.nick, "Command "+format.bold(line_info.command)+" not found")
 		if line[1] == "NOTICE":
 			if line[0][1:].find("NickServ!NickServ@services") != -1: # NickServ notice
-				nmMessage = ' '.join(str(i) for i in line[3:])[1:] # Reconstruct message
-				if nmMessage.find("This nickname is registered.") != -1:
+				_nmMessage = ' '.join(str(i) for i in line[3:])[1:] # Reconstruct message
+				if _nmMessage.find("This nickname is registered.") != -1:
 					print("\t[!!!] Authing to nickserv") ##DEBUG
 					if self.mask is True:
 						self.socketWrapper.nsIdentify(self.nick, self.nickPass, True)
@@ -110,12 +108,9 @@ class bot:
 	def run(self):
 		'''Main loop for reading data off the socket.'''
 		self.load_commands()
-		self.socketWrapper.connect(self.host, self.port, self.nick, self.ident, self.userMode)
+		self.socketWrapper.connect(self.host, self.port, self.nick, self.ident, self.userMode, self.serverPass)
 		if self.nickPass is not None:
-			if self.mask is True:
-				self.socketWrapper.nsIdentify(self.nick, self.nickPass, True)
-			else:
-				self.socketWrapper.nsIdentify(self.nick, self.nickPass)
+			self.socketWrapper.nsIdentify(self.nick, self.nickPass, self.mask)
 		self.socketWrapper.joinChannels(self.channels)
 		while self.socketWrapper.runState is True:
 			print("--> Requesting messages")
