@@ -10,7 +10,7 @@ class commandManager:
 			userThreads = []
 			self.threadPools[commandData.nick] = userThreads # Map nick to thread array
 		if self.userThreadCount(commandData.nick) > self.maxUserThreads - 1: # Subtract one to convert human-friendly bound to index-accurate bound
-			print("\t[!] Maximum thread count reached!") ## TODO: Better error printing
+			socket.notice(commandData.nick, "Maximum number of pending commands ("+str(self.maxUserThreads)+") reached. Command '"+commandData.command+"' has been ignored")
 			return
 		t = commandThread(self, commandData.nick, commandModule, commandData, socket)
 		self.threadPools[commandData.nick].append(t)
