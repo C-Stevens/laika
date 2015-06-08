@@ -44,18 +44,26 @@ class socketConnection:
 			for i in range(self.messageQueue.qsize()-1,-1,-1): # Walk backwards through items
 				queue.append(self.messageQueue.queue[i])
 		return queue
-	def connect(self, host, port, nick, ident, userMode):
+	def connect(self, host, port, nick, ident, userMode, serverPass=None,):
 		'''Establish an IRC connection'''
 		self.socket.connect((host, port))
 		time.sleep(0.2)
+		if serverPass is not None:
+			self.socketQueue.addToQueue("PASS "+serverPass+"\r\n")
+			time.sleep(0.2)
 		self.socketQueue.addToQueue("NICK "+nick+"\r\n")
 		time.sleep(0.2)
 		self.socketQueue.addToQueue("USER "+ident+" "+userMode+" * :"+nick+"\r\n")
 		self.runState = True
 	def pong(self, host):
 		'''Properly respond to server PINGs.'''
-		print("PING Received, sending PONG "+host) ##DEBUG
+		print("PONG "+host) ##DEBUG
 		self.socketQueue.addToQueue("PONG "+host+"\r\n")
+	def channelParse(self, channel):
+		if not channel.startswith("#"):
+			return "#" + channel
+		else:
+			return channel
 	def joinChannels(self, channels):
 		'''Join all channels in a given array.'''
 		if type(channels) == list:
@@ -81,7 +89,7 @@ class socketConnection:
 		self.socket.close()
 		self.runState = False
 	def nsIdentify(self, nick, password, waitForMask=False):
-		'''Identifies nick with NickServ.'''
+		'''Identifies the bot's nick with NickServ.'''
 		if password is not None:
 			self.socketQueue.addToQueue("NS IDENTIFY "+nick+" "+password+"\r\n")
 		if waitForMask == True: # Halts further socket interaction until the bot is given its mask
@@ -92,13 +100,11 @@ class socketConnection:
 				_backoff = min(_backoff * 1.05, _backoffMax)
 				time.sleep(_backoff)
 	def action(self, channel, action):
-		'''Issues an ACTION command to specified channel.'''
+		'''Issues a CTCP ACTION command to specified channel.'''
 		self.socketQueue.addToQueue("PRIVMSG "+self.channelParse(channel)+" :\u0001ACTION "+action+"\u0001\r\n")
-	def channelParse(self, channel):
-		if not channel.startswith("#"):
-			return "#" + channel
-		else:
-			return channel
+	def notice(self, nick, message):
+		'''Issues a notice to the specefied user with the specefied message.'''
+		self.socketQueue.addToQueue("NOTICE "+nick+" :"+message+"\r\n")
 
 class socketQueue:
 	def __init__(self, socket):
@@ -111,7 +117,5 @@ class socketQueue:
 		self.emptyQueue()
 	def emptyQueue(self):
 		'''Sends out all messages in the queue to the socket.'''
-		print("Hello I'm in the emptyQueue function") ##DEBUG
 		while self.socketQueue.empty() is False:
-			print("\tGonna empty out some messages") ##DEBUG
 			self.socket.send((self.socketQueue.get()).encode(self.encoding))
