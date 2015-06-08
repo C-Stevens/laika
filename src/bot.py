@@ -75,12 +75,12 @@ class bot:
 				line_info.highlightChar = self.highlightChar
 				line_info.args = line[4:]
 								
-				for i in self.command_list:
-					if self.run_check(i,line_info) == 0:
-						self.commandWrapper.spawnThread(line_info, self.socketWrapper, i)
+				for _command in self.command_list:
+					if self.run_check(_command,line_info) == 0:
+						self.commandWrapper.spawnThread(line_info, self.socketWrapper, _command)
 						#print("\t[!] Threads for this nick:",self.commandWrapper.reportThreads(line_info.nick)) ##DEBUG
 						return
-					elif self.run_check(i, line_info) == 2:
+					elif self.run_check(_command, line_info) == 2:
 						self.socketWrapper.sendToChannel(line_info.channel, line_info.nick + ": You are not authorized to use the " + format.bold(line_info.command) + " command")
 						return
 				self.socketWrapper.sendToChannel(line_info.channel, line_info.nick + ": Command " + format.bold(line_info.command) + " not found")
@@ -128,3 +128,4 @@ class bot:
 					except:
 						pass
 					self.parse(line)
+
