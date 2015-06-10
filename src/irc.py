@@ -3,26 +3,30 @@ import socket
 import sys
 import string
 import os
-from queue import Queue
+import threading
+import queue
                 
 class socketConnection:
 	def __init__(self, socket, queue):
 		self.socket = socket
 		self.messageQueue = queue
-		self.socketQueue = socketQueue(self.socket)
 		self.buffer = ''
-		self.runState = ''
+		self.runState = True
+		self.socketQueue = socketQueue(self, self.socket)
 	def readFromSocket(self):
 		'''Reads and returns data out of the socket. Aborts the connection and runState if socket times out.'''
+		if self.runState is False:
+			return None
 		try:
 			return self.socket.recv(1024).decode('utf-8')
 		except socket.timeout:
 			print("Socket has timed out. Aborting.") # TODO: Better error printing
-			self.socket.close()
 			self.runState = False
 	def buildMessageQueue(self):
 		'''Builds a message queue or adds message to an existing queue from socket data.'''
 		self.buffer = self.readFromSocket()
+		if self.buffer is None:
+			return
 		lines = self.buffer.split('\r\n')
 		if self.messageQueue.qsize() > 0:
 			_lastElementIndex = self.messageQueue.qsize()-1
@@ -54,7 +58,9 @@ class socketConnection:
 		self.socketQueue.addToQueue("NICK "+nick+"\r\n")
 		time.sleep(0.2)
 		self.socketQueue.addToQueue("USER "+ident+" "+userMode+" * :"+nick+"\r\n")
-		self.runState = True
+	def socketShutdown(self):
+		self.socket.shutdown(socket.SHUT_WR)
+		self.socket.close()
 	def pong(self, host):
 		'''Properly respond to server PINGs.'''
 		print("PONG "+host) ##DEBUG
@@ -86,8 +92,8 @@ class socketConnection:
 			self.socketQueue.addToQueue("QUIT :"+message+"\r\n")
 		else:
 			self.socketQueue.addToQueue("QUIT\r\n")
-		self.socket.close()
-		self.runState = False
+		time.sleep(.5)
+		self.runState = False # Stop further socket sends
 	def nsIdentify(self, nick, password, waitForMask=False):
 		'''Identifies the bot's nick with NickServ.'''
 		if password is not None:
@@ -107,15 +113,23 @@ class socketConnection:
 		self.socketQueue.addToQueue("NOTICE "+nick+" :"+message+"\r\n")
 
 class socketQueue:
-	def __init__(self, socket):
+	def __init__(self, parent, socket):
+		self.parent = parent
 		self.socket = socket
-		self.socketQueue = Queue()
+		self.socketQueue = queue.Queue()
 		self.encoding = 'utf-8'
+		self.t = threading.Thread(target=self.flushQueue, name="queueWorker")
+		self.t.start()
 	def addToQueue(self, message):
 		'''Adds a given string to the socket queue.'''
 		self.socketQueue.put(message)
-		self.emptyQueue()
-	def emptyQueue(self):
+	def flushQueue(self):
 		'''Sends out all messages in the queue to the socket.'''
-		while self.socketQueue.empty() is False:
-			self.socket.send((self.socketQueue.get()).encode(self.encoding))
+		while self.parent.runState is True:
+			try:
+				_queueItem = self.socketQueue.get(timeout=1)
+			except queue.Empty:
+				continue
+			if self.parent.runState is True: # Additional runState check to avoid sending to a closed socket
+				self.socket.send((_queueItem).encode(self.encoding))
+		self.parent.socketShutdown()
