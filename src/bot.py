@@ -113,7 +113,7 @@ class bot:
 			self.socketWrapper.nsIdentify(self.nick, self.nickPass, self.mask)
 		self.socketWrapper.joinChannels(self.channels)
 		while self.socketWrapper.runState is True:
-			print("--> Requesting messages")
+			#print("--> Requesting messages")
 			self.socketWrapper.buildMessageQueue()
 			while self.messageQueue.qsize() > 1: # Never touch last queue element, it will be cycled by buildMessageQueue()
 				line = self.messageQueue.get_nowait()
@@ -123,4 +123,3 @@ class bot:
 					except:
 						pass
 					self.parse(line)
-
