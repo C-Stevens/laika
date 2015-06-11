@@ -67,6 +67,7 @@ class socketConnection:
 		self.log.info("PONG "+host)
 		self.socketQueue.addToQueue("PONG "+host+"\r\n")
 	def channelParse(self, channel):
+		'''Returns a properly formatted channel for sending out the socket.'''
 		if not channel.startswith("#"):
 			return "#" + channel
 		else:
