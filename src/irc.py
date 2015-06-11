@@ -60,6 +60,7 @@ class socketConnection:
 		time.sleep(0.2)
 		self.socketQueue.addToQueue("USER "+ident+" "+userMode+" * :"+nick+"\r\n")
 	def socketShutdown(self):
+		'''Safely shuts down and closes the socket.'''
 		self.socket.shutdown(socket.SHUT_WR)
 		self.socket.close()
 	def pong(self, host):
