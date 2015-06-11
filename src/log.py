@@ -16,6 +16,7 @@ class logManager(logging.Logger):
 		if kwargs.get('debugLog', False):
 			self.addStream(kwargs.get('debugLogDir'), logging.DEBUG, kwargs.get('debugLogFormat', defaultFormat))
 	def addStream(self, logDir, logLevel, logFormat):
+		'''Adds a log handler with the specified options to the logger.'''
 		if logDir is not None:
 			try:
 				handler = logging.FileHandler(logDir)
@@ -33,4 +34,5 @@ class levelFilter:
 	def __init__(self, level):
 		self._level = level
 	def filter(self, logRecord):
+		'''Only logs lines that match the specified log level.'''
 		return logRecord.levelno <= self._level
