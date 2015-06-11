@@ -7,7 +7,8 @@ import threading
 import queue
                 
 class socketConnection:
-	def __init__(self, socket, queue):
+	def __init__(self, log, socket, queue):
+		self.log = log
 		self.socket = socket
 		self.messageQueue = queue
 		self.buffer = ''
@@ -20,7 +21,7 @@ class socketConnection:
 		try:
 			return self.socket.recv(1024).decode('utf-8')
 		except socket.timeout:
-			print("Socket has timed out. Aborting.") # TODO: Better error printing
+			self.log.error("Socket has timed out. Aborting.")
 			self.runState = False
 	def buildMessageQueue(self):
 		'''Builds a message queue or adds message to an existing queue from socket data.'''
@@ -63,7 +64,7 @@ class socketConnection:
 		self.socket.close()
 	def pong(self, host):
 		'''Properly respond to server PINGs.'''
-		print("PONG "+host) ##DEBUG
+		self.log.info("PONG "+host)
 		self.socketQueue.addToQueue("PONG "+host+"\r\n")
 	def channelParse(self, channel):
 		if not channel.startswith("#"):

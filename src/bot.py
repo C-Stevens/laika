@@ -1,26 +1,29 @@
 import ssl
 import os
 import imp
+import socket
 from queue import Queue
 import src.irc as irc
 import src.format as format
 import src.command as command
-import socket
+import src.log as log
 
 class bot:
 	def __init__(self, configFile):
 		self.configFile = configFile
+		self.logger = log.logManager(infoLog=True, infoLogFormat="%(asctime)s %(message)s", defaultFormat="%(asctime)s [%(threadName)s] - %(levelname)s - %(message)s") #TODO: Get these args from somewhere else
+
 		
 		if configFile.config['server']['ssl'] is True:
 			self.socket = ssl.wrap_socket(socket.socket())
 		elif configFile.config['server']['ssl'] is False:
 			self.socket = socket.socket()
 		else:
-			print("Unable to determine ssl preferences, defaulting to no ssl") # TODO: Better error messages
+			self.logger.warning("Unable to determine ssl preferences, defaulting to no ssl")
 			self.socket = socket.socket()
 		self.socket.settimeout(600) # Default timeout is 10 minutes. Can be changed here
 		self.messageQueue = Queue()
-		self.socketWrapper = irc.socketConnection(self.socket, self.messageQueue)
+		self.socketWrapper = irc.socketConnection(self.logger, self.socket, self.messageQueue)
 		self.commandWrapper = command.commandManager()
 
 		self.host = configFile.config['server']['host']
@@ -41,7 +44,7 @@ class bot:
 		command_paths = [os.path.abspath(os.path.join('./commands', i)) for i in os.listdir('./commands') if i.endswith('.py')]
 		for i in command_paths:
 			self.command_list.append(imp.load_source(os.path.splitext(os.path.basename(i))[0], i))
-		print("\t[!!!!!] loaded commands: ",self.command_list) ##DEBUG
+		self.logger.debug("Loaded Commands: %s", self.command_list)
 	def parse(self, line):
 		'''Deal with lines coming off the socket.'''
 		line = line.split(' ')
@@ -74,11 +77,11 @@ class bot:
 				line_info.highlightChar = self.highlightChar
 				line_info.args = line[4:]
 
-				for _command in self.command_list:
-					if self.run_check(_command,line_info) == 0:
-						self.commandWrapper.spawnThread(line_info, self.socketWrapper, _command)
+				for commandModule in self.command_list:
+					if self.run_check(commandModule,line_info) == 0:
+						self.commandWrapper.spawnThread(line_info, self.socketWrapper, commandModule)
 						return
-					elif self.run_check(_command, line_info) == 2:
+					elif self.run_check(commandModule, line_info) == 2:
 						self.socketWrapper.notice(line_info.nick, "You are not authorized to use the "+format.bold(line_info.command)+" command")
 						return
 				self.socketWrapper.notice(line_info.nick, "Command "+format.bold(line_info.command)+" not found")
@@ -86,7 +89,7 @@ class bot:
 			if line[0][1:].find("NickServ!NickServ@services") != -1: # NickServ notice
 				_nmMessage = ' '.join(str(i) for i in line[3:])[1:] # Reconstruct message
 				if _nmMessage.find("This nickname is registered.") != -1:
-					print("\t[!!!] Authing to nickserv") ##DEBUG
+					self.logger.info("Authing to nickserv")
 					if self.mask is True:
 						self.socketWrapper.nsIdentify(self.nick, self.nickPass, True)
 					else:
@@ -113,13 +116,12 @@ class bot:
 			self.socketWrapper.nsIdentify(self.nick, self.nickPass, self.mask)
 		self.socketWrapper.joinChannels(self.channels)
 		while self.socketWrapper.runState is True:
-			#print("--> Requesting messages")
 			self.socketWrapper.buildMessageQueue()
 			while self.messageQueue.qsize() > 1: # Never touch last queue element, it will be cycled by buildMessageQueue()
 				line = self.messageQueue.get_nowait()
 				if line is not '': # Ignore leftover items from split('\r\n')
-					try: # TODO: Better output printing
-						print(line)
+					try:
+						self.logger.info(line) # TODO: seperate irc logging
 					except:
 						pass
 					self.parse(line)
