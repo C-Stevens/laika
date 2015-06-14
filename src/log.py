@@ -1,6 +1,14 @@
 import logging
+import os
 
-class logManager(logging.Logger):
+class levelFilter:
+	def __init__(self, level):
+		self._level = level
+	def filter(self, logRecord):
+		'''Only logs lines that match the specified log level.'''
+		return logRecord.levelno <= self._level
+
+class logger(logging.Logger):
 	def __init__(self, **kwargs):
 		logging.Logger.__init__(self, self)		
 		defaultFormat = kwargs.get('defaultFormat', '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -12,6 +20,7 @@ class logManager(logging.Logger):
 		if kwargs.get('warnLog', True):
 			self.addStream(kwargs.get('warnLogDir'), logging.WARNING, kwargs.get('warnLogFormat', defaultFormat))
 		if kwargs.get('infoLog', False):
+			print("addin an infolog") ##DEBUG
 			self.addStream(kwargs.get('infoLogDir'), logging.INFO, kwargs.get('infoLogFormat', defaultFormat))
 		if kwargs.get('debugLog', False):
 			self.addStream(kwargs.get('debugLogDir'), logging.DEBUG, kwargs.get('debugLogFormat', defaultFormat))
@@ -19,6 +28,7 @@ class logManager(logging.Logger):
 		'''Adds a log handler with the specified options to the logger.'''
 		if logDir is not None:
 			try:
+				print("logDir:",logDir) ##DEBUG
 				handler = logging.FileHandler(logDir)
 			except FileNotFoundError as e:
 				print(e, "Defaulting message output for this stream to std_err")
@@ -30,9 +40,48 @@ class logManager(logging.Logger):
 		handler.addFilter(levelFilter(logLevel))
 		self.addHandler(handler)
 
-class levelFilter:
-	def __init__(self, level):
-		self._level = level
-	def filter(self, logRecord):
-		'''Only logs lines that match the specified log level.'''
-		return logRecord.levelno <= self._level
+class basicLogger(logging.Logger):
+	def __init__(self, logPath):
+		logging.Logger.__init__(self, self)
+		self.logPath = logPath
+		self.setLevel(logging.NOTSET)
+		self.addHandler(logging.FileHandler(self.logPath))
+	def log(self, msg):
+		self.info(msg)
+
+class channelLogger(logging.Logger):
+	def __init__(self, logPath):
+		logging.Logger.__init__(self, self)
+		self.setLevel(logging.NOTSET)
+		fh = logging.FileHandler(logPath)
+		fh.setFormatter(logging.Formatter("%(asctime)s %(message)s", "[%Y-%m-%d %H:%M:%S]"))
+		self.addHandler(fh)
+	def log(self, nick, msg):
+		self.info("<%(nick)s> %(msg)s", {'nick':nick, 'msg':msg})
+
+class ircLogManager:
+	def __init__(self, name):
+		self.botName = name
+		self._logRoot = os.path.abspath('./log') ## TODO: Make this less hacky
+		self.channelLogs = {}
+		self.prepareDirs()
+		self.prepareLogs()
+	def prepareDirs(self):
+		self.serverLogPath = os.path.join(self._logRoot, self.botName)
+		if not os.path.exists(self.serverLogPath):
+			os.makedirs(self.serverLogPath)
+		self.channelLogPath = os.path.join(self.serverLogPath, 'channel_log')
+		if not os.path.exists(self.channelLogPath):
+			os.makedirs(self.channelLogPath)
+	def prepareLogs(self):
+		self.serverLog = basicLogger(os.path.join(self.serverLogPath, 'server_log.log'))
+		self.socketLog = basicLogger(os.path.join(self.serverLogPath, 'socket_log.log'))
+	def channelLog(self, channel, line):
+		try:
+			self.channelLogs[channel]
+		except KeyError: # No log for this channel exists
+			channelLog = channelLogger(os.path.join(self.channelLogPath, channel))
+			self.channelLogs[channel] = channelLog
+		nick = line[0][1:].split('!')[0]
+		message = ' '.join(line[3:])[1:]
+		self.channelLogs[channel].log(nick, message)
