@@ -67,23 +67,26 @@ class bot:
 				else:
 					line_info.identd = True
 					splitOn = '!'
-				line_info.nick = line[0].split(splitOn)[0][1:]
-				line_info.user = line[0].split(splitOn)[1].split('@')[0]
-				line_info.hostname = line[0].split(splitOn)[1].split('@')[1]
-				line_info.msgType = line[1]
-				line_info.channel = line[2]
-				line_info.command = firstWord[1:]
-				line_info.highlightChar = self.highlightChar
-				line_info.args = line[4:]
+				try:
+					line_info.nick = line[0].split(splitOn)[0][1:]
+					line_info.user = line[0].split(splitOn)[1].split('@')[0]
+					line_info.hostname = line[0].split(splitOn)[1].split('@')[1]
+					line_info.msgType = line[1]
+					line_info.channel = line[2]
+					line_info.command = firstWord[1:]
+					line_info.highlightChar = self.highlightChar
+					line_info.args = line[4:]
 
-				for commandModule in self.command_list:
-					if self.run_check(commandModule,line_info) == 0:
-						self.commandWrapper.spawnThread(line_info, self.socketWrapper, commandModule)
-						return
-					elif self.run_check(commandModule, line_info) == 2:
-						self.socketWrapper.notice(line_info.nick, "You are not authorized to use the "+format.bold(line_info.command)+" command")
-						return
-				self.socketWrapper.notice(line_info.nick, "Command "+format.bold(line_info.command)+" not found")
+					for commandModule in self.command_list:
+						if self.run_check(commandModule,line_info) == 0:
+							self.commandWrapper.spawnThread(line_info, self.socketWrapper, commandModule)
+							return
+						elif self.run_check(commandModule, line_info) == 2:
+							self.socketWrapper.notice(line_info.nick, "You are not authorized to use the "+format.bold(line_info.command)+" command")
+							return
+					self.socketWrapper.notice(line_info.nick, "Command "+format.bold(line_info.command)+" not found")
+				except Exception as e:
+					self.ircLogger.serverLog.error(e, "Failed to parse message")
 			return
 		self.ircLogger.serverLog.info(' '.join(line)) # Log all non PRIVMSG server messages
 		if line[0] == "PING": # Respond to a network PINGs

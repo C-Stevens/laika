@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 
 class levelFilter:
 	def __init__(self, level):
@@ -20,7 +21,6 @@ class logger(logging.Logger):
 		if kwargs.get('warnLog', True):
 			self.addStream(kwargs.get('warnLogDir'), logging.WARNING, kwargs.get('warnLogFormat', defaultFormat))
 		if kwargs.get('infoLog', False):
-			print("addin an infolog") ##DEBUG
 			self.addStream(kwargs.get('infoLogDir'), logging.INFO, kwargs.get('infoLogFormat', defaultFormat))
 		if kwargs.get('debugLog', False):
 			self.addStream(kwargs.get('debugLogDir'), logging.DEBUG, kwargs.get('debugLogFormat', defaultFormat))
@@ -28,7 +28,6 @@ class logger(logging.Logger):
 		'''Adds a log handler with the specified options to the logger.'''
 		if logDir is not None:
 			try:
-				print("logDir:",logDir) ##DEBUG
 				handler = logging.FileHandler(logDir)
 			except FileNotFoundError as e:
 				print(e, "Defaulting message output for this stream to std_err")
@@ -77,11 +76,15 @@ class ircLogManager:
 		self.serverLog = basicLogger(os.path.join(self.serverLogPath, 'server_log.log'))
 		self.socketLog = basicLogger(os.path.join(self.serverLogPath, 'socket_log.log'))
 	def channelLog(self, channel, line):
-		try:
+		if channel in self.channelLogs:
 			self.channelLogs[channel]
-		except KeyError: # No log for this channel exists
+		else: # No log for this channel exists
 			channelLog = channelLogger(os.path.join(self.channelLogPath, channel))
 			self.channelLogs[channel] = channelLog
-		nick = line[0][1:].split('!')[0]
-		message = ' '.join(line[3:])[1:]
-		self.channelLogs[channel].log(nick, message)
+		try:
+			nick = line[0][1:].split('!')[0]
+			message = ' '.join(line[3:])[1:]
+			self.channelLogs[channel].log(nick, message)
+		except Exception as e:
+			sys.stderr.write(e)
+			traceback.print_exc(file=sys.stderr)
