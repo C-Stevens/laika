@@ -4,8 +4,9 @@ import src
 from threading import Thread
 from _version import __version__
 
+rootLog = src.log.logger(infoLog=True, defaultFormat="%(message)s", debugLogFormat="[%(levelname)s] %(message)s") #TODO: Read in values from args and/or config file
+
 if __name__ == "__main__":
-	rootLog = src.log.logManager(infoLog=True, defaultFormat="%(message)s", debugLogFormat="[%(levelname)s] %(message)s") #TODO: Read in values from args and/or config file
 	rootLog.info("Laika version "+__version__+" starting..")
 
 	rootLog.info("Loading bot config files..")
@@ -19,7 +20,8 @@ if __name__ == "__main__":
 	threads = []
 	for i in botPool:
 		rootLog.info("Starting bot '%s'..",i.__name__)
-		botObject = src.bot.bot(i)
+		botLog = src.log.logger(infoLog=True, infoLogFormat="%(asctime)s %(message)s", defaultFormat="%(asctime)s [%(threadName)s] - %(levelname)s - %(message)s") #TODO: Get these args from somewhere else
+		botObject = src.bot.bot(i, botLog)
 		t = Thread(target=botObject.run, name=i.__name__)
 		threads.append(t)
 		t.start()
