@@ -9,11 +9,11 @@ import src.command as command
 import src.log as log
 
 class bot:
-	def __init__(self, configFile):
+	def __init__(self, configFile, botLog):
 		self.configFile = configFile
-		self.logger = log.logManager(infoLog=True, infoLogFormat="%(asctime)s %(message)s", defaultFormat="%(asctime)s [%(threadName)s] - %(levelname)s - %(message)s") #TODO: Get these args from somewhere else
+		self.logger = botLog
+		self.ircLogger = log.ircLogManager(configFile.config['nick'])
 
-		
 		if configFile.config['server']['ssl'] is True:
 			self.socket = ssl.wrap_socket(socket.socket())
 		elif configFile.config['server']['ssl'] is False:
@@ -21,9 +21,9 @@ class bot:
 		else:
 			self.logger.warning("Unable to determine ssl preferences, defaulting to no ssl")
 			self.socket = socket.socket()
-		self.socket.settimeout(600) # Default timeout is 10 minutes. Can be changed here
+		self.socket.settimeout(600) # Default timeout is 10 minutes
 		self.messageQueue = Queue()
-		self.socketWrapper = irc.socketConnection(self.logger, self.socket, self.messageQueue)
+		self.socketWrapper = irc.socketConnection(self.logger, self.ircLogger, self.socket, self.messageQueue)
 		self.commandWrapper = command.commandManager()
 
 		self.host = configFile.config['server']['host']
@@ -48,9 +48,6 @@ class bot:
 	def parse(self, line):
 		'''Deal with lines coming off the socket.'''
 		line = line.split(' ')
-		if line[0] == "PING": # Respond to a network PINGs
-			self.socketWrapper.pong(line[1])
-			return
 		if line[1] == "PRIVMSG":
 			if len(line) < 4: # Malformed line. Pass to avoid going out of bounds
 				return
@@ -58,6 +55,8 @@ class bot:
 			if len(firstWordSplit) < 2: # Line split improperly on ':', discard
 				return
 			firstWord = firstWordSplit[1]
+
+			self.ircLogger.channelLog(line[2], line) # Log channel message
 
 			if len(firstWord) != 1 and firstWord.startswith(self.highlightChar): # Check for command words
 				line_info = command.commandData()
@@ -85,6 +84,11 @@ class bot:
 						self.socketWrapper.notice(line_info.nick, "You are not authorized to use the "+format.bold(line_info.command)+" command")
 						return
 				self.socketWrapper.notice(line_info.nick, "Command "+format.bold(line_info.command)+" not found")
+			return
+		self.ircLogger.serverLog.info(' '.join(line)) # Log all non PRIVMSG server messages
+		if line[0] == "PING": # Respond to a network PINGs
+			self.socketWrapper.pong(line[1])
+			return
 		if line[1] == "NOTICE":
 			if line[0][1:].find("NickServ!NickServ@services") != -1: # NickServ notice
 				_nmMessage = ' '.join(str(i) for i in line[3:])[1:] # Reconstruct message
@@ -94,6 +98,7 @@ class bot:
 						self.socketWrapper.nsIdentify(self.nick, self.nickPass, True)
 					else:
 						self.socketWrapper.nsIdentify(self.nick, self.nickPass)
+			return
 	def run_check(self, command, line_info):
 		'''Checks if the command being called is the command requested, and checks if user is allowed to call that command.'''
 		if line_info.command == command.config['command_str']:

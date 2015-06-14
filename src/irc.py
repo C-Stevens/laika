@@ -7,13 +7,14 @@ import threading
 import queue
                 
 class socketConnection:
-	def __init__(self, log, socket, queue):
+	def __init__(self, log, ircLog, socket, queue):
 		self.log = log
+		self.ircLog = ircLog
 		self.socket = socket
 		self.messageQueue = queue
 		self.buffer = ''
 		self.runState = True
-		self.socketQueue = socketQueue(self, self.socket)
+		self.socketQueue = socketQueue(self, self.socket, self.ircLog)
 	def readFromSocket(self):
 		'''Reads and returns data out of the socket. Aborts the connection and runState if socket times out.'''
 		if self.runState is False:
@@ -116,9 +117,10 @@ class socketConnection:
 		self.socketQueue.addToQueue("NOTICE "+nick+" :"+message+"\r\n")
 
 class socketQueue:
-	def __init__(self, parent, socket):
+	def __init__(self, parent, socket, ircLog):
 		self.parent = parent
 		self.socket = socket
+		self.ircLog = ircLog
 		self.socketQueue = queue.Queue()
 		self.encoding = 'utf-8'
 		self.t = threading.Thread(target=self.flushQueue, name="queueWorker")
@@ -134,5 +136,6 @@ class socketQueue:
 			except queue.Empty:
 				continue
 			if self.parent.runState is True: # Additional runState check to avoid sending to a closed socket
+				self.ircLog.socketLog.info(_queueItem) # Log socket send
 				self.socket.send((_queueItem).encode(self.encoding))
 		self.parent.socketShutdown()
