@@ -11,6 +11,7 @@ class socketConnection:
 		self.log = log
 		self.ircLog = ircLog
 		self.socket = socket
+		self.socket.settimeout(600) # Default 10 minutes
 		self.messageQueue = queue
 		self.buffer = ''
 		self.runState = True

@@ -39,7 +39,7 @@ class commandThread(threading.Thread):
 		self.command = commandModule
 		self.args = args
 	def run(self):
-		'''Runs the command's run() function, then signals that it's finished'''
+		'''Runs the command's run() function, then signals that the thread is finished.'''
 		self.command.run(*self.args)
 		self.parent.removeThread(self, self.user)
 
