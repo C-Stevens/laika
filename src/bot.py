@@ -9,36 +9,35 @@ import src.command as command
 import src.log as log
 
 class bot:
-	def __init__(self, configFile, botLog):
-		self.configFile = configFile
+	def __init__(self, config, botLog, **kwargs):
+		self.loadConfig(config)
 		self.logger = botLog
-		self.ircLogger = log.ircLogManager(configFile.config['nick'], a='b') ##DEBUG
-
-		if configFile.config['server']['ssl'] is True:
+		self.ircLogger = log.ircLogManager(kwargs.get('botLogName', config['nick'])) ##DEBUG
+		self.messageQueue = Queue()
+		self.socketWrapper = irc.socketConnection(self.logger, self.ircLogger, self.socket, self.messageQueue)
+		self.commandWrapper = command.commandManager()
+		self.command_list = []
+	def loadConfig(self, config):
+		'''Loads all needed config items into object.'''
+		if config['server']['ssl'] is True:
 			self.socket = ssl.wrap_socket(socket.socket())
-		elif configFile.config['server']['ssl'] is False:
+		elif config['server']['ssl'] is False:
 			self.socket = socket.socket()
 		else:
 			self.logger.warning("Unable to determine ssl preferences, defaulting to no ssl")
 			self.socket = socket.socket()
-		self.socket.settimeout(600) # Default timeout is 10 minutes
-		self.messageQueue = Queue()
-		self.socketWrapper = irc.socketConnection(self.logger, self.ircLogger, self.socket, self.messageQueue)
-		self.commandWrapper = command.commandManager()
+		self.host 		= config['server']['host']
+		self.port 		= config['server']['port']
+		self.serverPass 	= config['server']['pass']
+		self.nick 		= config['nick']
+		self.nickPass 		= config['nickPass']
+		self.mask 		= config['mask']
+		self.ident 		= config['ident']
+		self.userMode 		= str(config['userMode'])
+		self.channels 		= config['channels']
+		self.highlightChar 	= config['highlightChar']
+		self.authList 		= config['authList']
 
-		self.host = configFile.config['server']['host']
-		self.port = configFile.config['server']['port']
-		self.serverPass = configFile.config['server']['pass']
-		self.nick = configFile.config['nick']
-		self.nickPass = configFile.config['nickPass']
-		self.mask = configFile.config['mask']
-		self.ident = configFile.config['ident']
-		self.userMode = configFile.config['userMode']
-		self.channels = configFile.config['channels']
-		self.highlightChar = configFile.config['highlightChar']
-		self.authList = configFile.config['authList']
-
-		self.command_list = []
 	def load_commands(self):
 		'''Import all commands found in ./commands.'''
 		command_paths = [os.path.abspath(os.path.join('./commands', i)) for i in os.listdir('./commands') if i.endswith('.py')]

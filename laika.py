@@ -1,30 +1,40 @@
 import os
+import sys
 import imp
 import src
 from threading import Thread
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "lib/pyyaml/lib3"))
+import yaml
+import argparse
 from _version import __version__
+
+argParser = argparse.ArgumentParser(description="A modular chat bot for the IRC protocol.")
+argParser.add_argument("--version", action='version', version=__version__, help="Displays version information and exits")
+args = argParser.parse_args()
 
 rootLog = src.log.logger(infoLog=True, defaultFormat="%(message)s", debugLogFormat="[%(levelname)s] %(message)s") #TODO: Read in values from args and/or config file
 
 if __name__ == "__main__":
-	rootLog.info("Laika version "+__version__+" starting..")
+	rootLog.info("Laika version "+__version__+"\n-------------")
 
 	rootLog.info("Loading bot config files..")
-	botConfigs = [os.path.abspath(os.path.join('./config', i)) for i in os.listdir('./config') if i.endswith('.py')]
-	botPool = []
+	botConfigs = [os.path.abspath(os.path.join('./config', i)) for i in os.listdir('./config') if i.endswith('.yaml')]
+	botPool = {}
 	for i in botConfigs:
-		botPool.append(imp.load_source(os.path.splitext(os.path.basename(i))[0], i))
+		botPool[i] = yaml.load(open(i, "r").read(-1))
+		#botPool.append(imp.load_source(os.path.splitext(os.path.basename(i))[0], i))
 	rootLog.info("Bot config files loaded")
 	rootLog.debug("Bot Pool: %s",botPool)
 
 	threads = []
 	for i in botPool:
-		rootLog.info("Starting bot '%s'..",i.__name__)
-		botLog = src.log.logger(infoLog=True, infoLogFormat="%(asctime)s %(message)s", defaultFormat="%(asctime)s [%(threadName)s] - %(levelname)s - %(message)s") #TODO: Get these args from somewhere else
-		botObject = src.bot.bot(i, botLog)
-		t = Thread(target=botObject.run, name=i.__name__)
+		configFilename = i.split('/')[-1]
+		rootLog.info("Starting bot '%s'..",configFilename)
+		botLog = src.log.logger(infoLog=False, infoLogFormat="%(asctime)s %(message)s", defaultFormat="%(asctime)s [%(threadName)s] - %(levelname)s - %(message)s") #TODO: Get these args from somewhere else
+		botObject = src.bot.bot(botPool[i], botLog)
+		t = Thread(target=botObject.run, name=configFilename)
 		threads.append(t)
 		t.start()
-		rootLog.info("Bot '%s' started", i.__name__)
+		rootLog.info("Bot '%s' started", configFilename)
 	for i in threads:
 		i.join()
