@@ -12,7 +12,7 @@ class bot:
 	def __init__(self, configFile, botLog):
 		self.configFile = configFile
 		self.logger = botLog
-		self.ircLogger = log.ircLogManager(configFile.config['nick'])
+		self.ircLogger = log.ircLogManager(configFile.config['nick'], a='b') ##DEBUG
 
 		if configFile.config['server']['ssl'] is True:
 			self.socket = ssl.wrap_socket(socket.socket())
@@ -86,7 +86,8 @@ class bot:
 							return
 					self.socketWrapper.notice(line_info.nick, "Command "+format.bold(line_info.command)+" not found")
 				except Exception as e:
-					self.ircLogger.serverLog.error(e, "Failed to parse message")
+					self.ircLogger.serverLog.error("Failed to parse message: "+line)
+					self.ircLogger.serverLog.exception(e)
 			return
 		self.ircLogger.serverLog.info(' '.join(line)) # Log all non PRIVMSG server messages
 		if line[0] == "PING": # Respond to a network PINGs

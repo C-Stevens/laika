@@ -136,6 +136,6 @@ class socketQueue:
 			except queue.Empty:
 				continue
 			if self.parent.runState is True: # Additional runState check to avoid sending to a closed socket
-				self.ircLog.socketLog.info(_queueItem) # Log socket send
+				self.ircLog.socketLog.info(_queueItem.replace('\r\n','')) # Log socket send
 				self.socket.send((_queueItem).encode(self.encoding))
 		self.parent.socketShutdown()
