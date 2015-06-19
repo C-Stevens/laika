@@ -2,6 +2,7 @@ import threading
 from src.datatypes import Type
 import re
 import traceback
+import src.format as format
 
 class commandError(Exception):
 	'''Generic Exception class for catching errors while handling commands.'''
@@ -11,23 +12,33 @@ class commandError(Exception):
 		return repr(self.msg)
 
 class commandManager:
-	def __init__(self, log):
+	def __init__(self, log, commandList, authList):
 		self.log = log
+		self.commandList = commandList
+		self.authList = authList
 		self.maxUserThreads = 5 # Default user thread pool size
 		self.threadPools = {}
-	def spawnThread(self, commandData, socket, commandModule):
-		'''Spawns a command thread.'''
-		user = commandData.hostname
-		if self.userThreadCount(user) is None: # No threads exist. Create a thread pool for this user
-			userThreads = []
-			self.threadPools[user] = userThreads # Map nick to thread array
-		if self.userThreadCount(user) > self.maxUserThreads - 1: # Subtract one to convert human-friendly bound to index-accurate bound
-			socket.notice(commandData.nick, "Maximum number of pending commands ("+str(self.maxUserThreads)+") reached. Command '"+commandData.command+"' has been ignored")
-			self.log.warning("User '"+user+"'has filled their command queue and been denied a command request")
-			return
-		t = commandThread(self, user, commandModule, commandData, socket)
-		self.threadPools[user].append(t)
-		t.start()
+	def spawnThread(self, commandData, socket):
+		'''Spawns a command thread if given the OK from runValidator'''
+		for i in self.commandList:
+			if commandData.command == i.config['command_str']:
+				if i.config['auth'] is False or i.config['auth'] is True and commandData.nick in self.authList:
+					user = commandData.hostname
+					if self.userThreadCount(user) is None: # No threads exist. Create a thread pool for this user
+						userThreads = []
+						self.threadPools[user] = userThreads # Map nick to thread array
+					if self.userThreadCount(user) > self.maxUserThreads - 1: # Subtract one to convert human-friendly bound to index-accurate bound
+						socket.notice(commandData.nick, "Maximum number of pending commands ("+str(self.maxUserThreads)+") reached. Command '"+commandData.command+"' has been ignored")
+						self.log.warning("User '"+user+"'has filled their command queue and been denied a command request")
+						return
+					t = commandThread(self, user, i, commandData, socket)
+					self.threadPools[user].append(t)
+					t.start()
+					return
+				else:
+					socket.notice(commandData.nick, "You are not authorized to use the "+format.bold(commandData.command)+" command")
+					return
+		socket.notice(commandData.nick, "Command "+format.bold(commandData.command)+" not found")
 	def userThreadCount(self, user):
 		'''Returns the number of active threads in the provided user's thread pool.'''
 		try:
@@ -89,7 +100,7 @@ class commandThread(threading.Thread):
 			self.command.run(self, *validArgs)
 			self.parent.removeThread(self, self.user)
 		except Exception as e:
-			self.socket.notice(self.commandData.nick, "Command '"+self.command+"' has critically failed. See logs for more information")
+			self.socket.notice(self.commandData.nick, "Command '"+str(self.command)+"' has critically failed. See logs for more information")
 			self.parent.log.exception(e)
 			self.parent.removeThread(self, self.user)
 			return
@@ -104,7 +115,7 @@ class commandData:
 		self.command = ''
 		self.highlightChar = ''
 		self.msgType = ''
-		self.args = []
+		self.args = ''
 	def printData(self):
 		''' Print out all held data for debug.'''
 		print("identd :",self.identd)

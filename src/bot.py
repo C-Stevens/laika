@@ -15,8 +15,8 @@ class bot:
 		self.ircLogger = log.ircLogManager(kwargs.get('botLogName', config['nick'])) ##DEBUG
 		self.messageQueue = Queue()
 		self.socketWrapper = irc.socketConnection(self.logger, self.ircLogger, self.socket, self.messageQueue)
-		self.commandWrapper = command.commandManager(self.logger)
 		self.command_list = []
+		self.commandWrapper = command.commandManager(self.logger, self.command_list, self.authList)
 	def loadConfig(self, config):
 		'''Loads all needed config items into object.'''
 		if config['server']['ssl'] is True:
@@ -76,14 +76,7 @@ class bot:
 					line_info.highlightChar = self.highlightChar
 					line_info.args = ' '.join(line[4:])
 
-					for commandModule in self.command_list:
-						if self.run_check(commandModule,line_info) == 0:
-							self.commandWrapper.spawnThread(line_info, self.socketWrapper, commandModule)
-							return
-						elif self.run_check(commandModule, line_info) == 2:
-							self.socketWrapper.notice(line_info.nick, "You are not authorized to use the "+format.bold(line_info.command)+" command")
-							return
-					self.socketWrapper.notice(line_info.nick, "Command "+format.bold(line_info.command)+" not found")
+					self.commandWrapper.spawnThread(line_info, self.socketWrapper)
 				except Exception as e:
 					self.logger.error("Failed to parse message: %s", line)
 					self.logger.exception(e)
@@ -102,17 +95,6 @@ class bot:
 					else:
 						self.socketWrapper.nsIdentify(self.nick, self.nickPass)
 			return
-	def run_check(self, command, line_info):
-		'''Checks if the command being called is the command requested, and checks if user is allowed to call that command.'''
-		if line_info.command == command.config['command_str']:
-			if command.config['auth'] is False:
-				return 0
-			elif command.config['auth'] is True and line_info.nick in self.authList:
-				return 0
-			else:
-				return 2
-		else:
-			return 1
 	def printConfig(self):
 		'''Prints the object's loaded config for debug.'''
 		print(self.configFile.config)
