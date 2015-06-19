@@ -15,7 +15,7 @@ class bot:
 		self.ircLogger = log.ircLogManager(kwargs.get('botLogName', config['nick'])) ##DEBUG
 		self.messageQueue = Queue()
 		self.socketWrapper = irc.socketConnection(self.logger, self.ircLogger, self.socket, self.messageQueue)
-		self.commandWrapper = command.commandManager()
+		self.commandWrapper = command.commandManager(self.logger)
 		self.command_list = []
 	def loadConfig(self, config):
 		'''Loads all needed config items into object.'''
@@ -74,7 +74,7 @@ class bot:
 					line_info.channel = line[2]
 					line_info.command = firstWord[1:]
 					line_info.highlightChar = self.highlightChar
-					line_info.args = line[4:]
+					line_info.args = ' '.join(line[4:])
 
 					for commandModule in self.command_list:
 						if self.run_check(commandModule,line_info) == 0:
@@ -85,8 +85,8 @@ class bot:
 							return
 					self.socketWrapper.notice(line_info.nick, "Command "+format.bold(line_info.command)+" not found")
 				except Exception as e:
-					self.ircLogger.serverLog.error("Failed to parse message: "+line)
-					self.ircLogger.serverLog.exception(e)
+					self.logger.error("Failed to parse message: %s", line)
+					self.logger.exception(e)
 			return
 		self.ircLogger.serverLog.info(' '.join(line)) # Log all non PRIVMSG server messages
 		if line[0] == "PING": # Respond to a network PINGs

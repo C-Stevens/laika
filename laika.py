@@ -15,7 +15,7 @@ args = argParser.parse_args()
 rootLog = src.log.logger(infoLog=True, defaultFormat="%(message)s", debugLogFormat="[%(levelname)s] %(message)s") #TODO: Read in values from args and/or config file
 
 if __name__ == "__main__":
-	rootLog.info("Laika version "+__version__+"\n-------------")
+	rootLog.info("-------------\n"+__version__+"\n-------------")
 
 	rootLog.info("Loading bot config files..")
 	botConfigs = [os.path.abspath(os.path.join('./config', i)) for i in os.listdir('./config') if i.endswith('.yaml')]
@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
 	threads = []
 	for i in botPool:
-		configFilename = i.split('/')[-1]
+		configFilename = i.split('/')[-1].replace('.yaml','')
 		rootLog.info("Starting bot '%s'..",configFilename)
 		botLog = src.log.logger(infoLog=False, infoLogFormat="%(asctime)s %(message)s", defaultFormat="%(asctime)s [%(threadName)s] - %(levelname)s - %(message)s") #TODO: Get these args from somewhere else
 		botObject = src.bot.bot(botPool[i], botLog)
