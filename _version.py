@@ -1,1 +1,1 @@
-__version__ = "Laika 1.1a"
+__version__ = "Laika 1.2a"
