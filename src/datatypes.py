@@ -5,7 +5,7 @@ nickRegex = '[^0-9\-#]{1}([0-9a-zA-z\-\{\}\^\[\]\\\][^#])+'
 msgRegex = '.*'
 umodeRegex = '[+-]{1}[iwso]{1,4}'
 cmodeRegex = '[+-]{1}[opsitnbv]{1,8}'
-intRegex = '[0-9].*'
+intRegex = '[\d|.]+'
 
 class Type(enum.Enum):
 	channel = 0
