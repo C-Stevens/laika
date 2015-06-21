@@ -29,7 +29,7 @@ class commandManager:
 						self.threadPools[user] = userThreads # Map nick to thread array
 					if self.userThreadCount(user) > self.maxUserThreads - 1: # Subtract one to convert human-friendly bound to index-accurate bound
 						socket.notice(commandData.nick, "Maximum number of pending commands ("+str(self.maxUserThreads)+") reached. Command '"+commandData.command+"' has been ignored")
-						self.log.warning("User '"+user+"'has filled their command queue and been denied a command request")
+						self.log.warning("User '"+user+"' has filled their command queue and has been denied a command request")
 						return
 					t = commandThread(self, user, i, commandData, socket)
 					self.threadPools[user].append(t)
@@ -64,40 +64,66 @@ class commandThread(threading.Thread):
 		self.commandData = commandData
 		self.name = self.commandData.command
 		self.socket = socket
-	def validateArgs(self):
-		givenArgs = self.commandData.args
-		commandArgs = self.command.config['args']
-		if len(givenArgs) is 0 and commandArgs is not None:
-			raise commandError("Command requested arguments but recieved none.")
-		elif len(givenArgs) is not 0 and commandArgs is None:
-			raise commandError("Command was provided arguments but requested none.")
-		elif len(givenArgs) is 0 and commandArgs is None:
+	def validateArgs(self, args, commandArgs, optional=False):
+		'''Assembles a regex match out of command arguments, and returns matches from provided commands.'''
+		givenArgs = args
+		print("GIVEN ARGS:",givenArgs) ##DEBUG
+		print("COMMAND ARGS:",commandArgs) ##DEBUG
+		if not commandArgs:
+			print("Returning") ##DEBUG
 			return ()
+		if len(givenArgs) is 0 and commandArgs is not None:
+			if optional:
+				return ()
+			else:
+				raise commandError("Command requested arguments but recieved none.")
 		print(commandArgs) ##DEBUG
 		
 		_regexList = list(commandArgs)
 		for i, type, in enumerate(_regexList):
 			_regexList[i] = "(%s)"%type.validRegex()
 		_stringMatch = re.compile(r'^'+' '.join(_regexList)+'$')
-		print("givenArgs:",givenArgs) ##DEBUG
+
 		argMatches = _stringMatch.match(givenArgs)
 		if argMatches is None:
 			raise commandError("Command failed to match arguments.")
 		else:
+			print("\tMATCHES:",argMatches.groups()) ##DBEUG
 			return argMatches.groups()
-		print("TOTAL REGEX MATCH:",_stringMatch) ##DEBUG
+		#print("TOTAL REGEX MATCH:",_stringMatch) ##DEBUG
+	def createUsage(self, command):
+		'''Returns a formatted Usage string.'''
+		if  not command.config['args']:
+			return "Usage: %s%s\t<No arguments>"%(self.commandData.highlightChar, command.config['command_str'])
+		else:
+			return "Usage: %s%s\t%s"%(self.commandData.highlightChar,command.config['command_str'],self.argList(command.config['args']))
+	def argList(self, args):
+		'''Assembles and returns a formatted argument list.'''
+		_argList = list(args)
+		for i, arg in enumerate(_argList):
+			_argList[i] = '<'+repr(arg).split(':')[0][1:]+'>'
+		_argList = ' '.join(_argList)
+		return _argList
 	def run(self):
 		'''Runs the command's run() function, then signals that the thread is finished.'''
 		try:
-			validArgs = self.validateArgs()
+			validArgs = self.validateArgs(self.commandData.args, self.command.config['args'])
+			print("VALID ARGS:",validArgs) ##DEBUG
+			if self.command.config['op_args']:
+				opArgs = self.validateArgs(self.commandData.args, self.command.config['op_args'], True)
+			else:
+				opArgs = None
 		except commandError as e:
 			self.socket.notice(self.commandData.nick, self.commandData.command+": Invalid syntax - "+e.msg)
-			self.socket.notice(self.commandData.nick, "Usage: %s%s %s"%(self.commandData.highlightChar,self.commandData.command,self.command.config['args']))
+			self.socket.notice(self.commandData.nick, self.createUsage(self.command))
+			if self.command.config['op_args']:
+				self.socket.notice(self.commandData.nick, "Optional Arguments:\t"+self.argList(self.command.config['op_args']))
 			self.parent.log.error(str(e))
 			self.parent.removeThread(self, self.user)
 			return
 		try:
-			self.command.run(self, *validArgs)
+			print("OPTIONAL ARGS:",opArgs) ##DEBUG
+			self.command.run(self, *validArgs, optionalArgs=opArgs)
 			self.parent.removeThread(self, self.user)
 		except Exception as e:
 			self.socket.notice(self.commandData.nick, "Command '"+str(self.command)+"' has critically failed. See logs for more information")
