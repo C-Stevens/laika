@@ -78,15 +78,14 @@ class commandThread(threading.Thread):
 		if len(commandArgs) > 1:
 			for arg in commandArgs[:-1]:
 				if arg.optional:
-					_regexMatch += "(%s\s)?"%(arg.baseRegex())
+					_regexMatch += "(?:%s\s)?"%(arg.baseRegex())
 				else:
-					_regexMatch += "(%s\s)"%(arg.baseRegex())
+					_regexMatch += "(?:%s\s)"%(arg.baseRegex())
 		if commandArgs[-1].optional:
-			_regexMatch += "(%s)?"%(commandArgs[-1].baseRegex())
+			_regexMatch += "(?:%s)?"%(commandArgs[-1].baseRegex())
 		else:
-			_regexMatch += "(%s)"%(commandArgs[-1].baseRegex())
+			_regexMatch += "(?:%s)"%(commandArgs[-1].baseRegex())
 		_stringMatch = re.compile(r'^'+_regexMatch+'$')
-		print("\t",_stringMatch) ##DEBUG
 		result = _stringMatch.search(args)
 		if result is None and len(commandArgs) != 0:
 			raise commandError("Command failed to match arguments.")

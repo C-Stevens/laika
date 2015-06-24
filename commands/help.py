@@ -4,6 +4,14 @@ import src.format
 def run(self, **kwargs):
 	_helpPrefix = src.format.bold("help | ")
 	command = kwargs.get('command')
+	if not command:
+		_friendlyCommandList = []
+		for i in self.parent.commandList:
+			_friendlyCommandList.append(i.config['command_str'])
+		_friendlyCommandList = ', '.join(_friendlyCommandList)
+		self.socket.notice(self.commandData.nick, _helpPrefix+"Avaliable commands: "+_friendlyCommandList)
+		return
+
 	for i in self.parent.commandList:
 		if command == i.config['command_str']:
 			self.socket.notice(self.commandData.nick, _helpPrefix+i.config['name'])
@@ -11,17 +19,11 @@ def run(self, **kwargs):
 			self.socket.notice(self.commandData.nick, _helpPrefix+self.createUsage(i))
 			return
 	self.socket.notice(self.commandData.nick, _helpPrefix+"Help information for "+src.format.bold(command)+" not found.")
-	_friendlyCommandList = []
-	for i in self.parent.commandList:
-		_friendlyCommandList.append(i.config['command_str'])
-	_friendlyCommandList = ', '.join(_friendlyCommandList)
-
-	self.socket.notice(self.commandData.nick, _helpPrefix+"Avaliable commands: "+_friendlyCommandList)
 
 config = {
 	'name' : 'Help',
 	'command_str' : 'help',
-	'args' : [Argument(type=Type.msg, optional=False, name="command")],
+	'args' : [Argument(type=Type.msg, optional=True, name="command")],
 	'auth' : False,
 	'help' : "Reports help and usage information for a command."
 }
