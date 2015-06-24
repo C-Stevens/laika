@@ -1,5 +1,5 @@
+import sys
 import threading
-from src.datatypes import Type
 import re
 import traceback
 import src.format as format
@@ -64,66 +64,67 @@ class commandThread(threading.Thread):
 		self.commandData = commandData
 		self.name = self.commandData.command
 		self.socket = socket
-	def validateArgs(self, args, commandArgs, optional=False):
-		'''Assembles a regex match out of command arguments, and returns matches from provided commands.'''
-		givenArgs = args
-		print("GIVEN ARGS:",givenArgs) ##DEBUG
-		print("COMMAND ARGS:",commandArgs) ##DEBUG
-		if not commandArgs:
-			print("Returning") ##DEBUG
-			return ()
-		if len(givenArgs) is 0 and commandArgs is not None:
-			if optional:
-				return ()
-			else:
-				raise commandError("Command requested arguments but recieved none.")
-		print(commandArgs) ##DEBUG
-		
-		_regexList = list(commandArgs)
-		for i, type, in enumerate(_regexList):
-			_regexList[i] = "(%s)"%type.validRegex()
-		_stringMatch = re.compile(r'^'+' '.join(_regexList)+'$')
-
-		argMatches = _stringMatch.match(givenArgs)
-		if argMatches is None:
-			raise commandError("Command failed to match arguments.")
+	def validateArgs(self, args, commandArgs):
+		'''Assembles a regex match out of command arguments, and returns dict of matches from provided commands.'''
+		requiredArgs = 0
+		for i in commandArgs:
+			if not i.optional:
+				requiredArgs += 1
+		if not args and requiredArgs != 0:
+			raise commandError("Command requested arguments but recieved none.")
+		if args and len(commandArgs) == 0:
+			raise commandError("Command requested no arguments but arguments were recieved.")
+		_regexMatch = ''
+		if len(commandArgs) > 1:
+			for arg in commandArgs[:-1]:
+				if arg.optional:
+					_regexMatch += "(%s\s)?"%(arg.baseRegex())
+				else:
+					_regexMatch += "(%s\s)"%(arg.baseRegex())
+		if commandArgs[-1].optional:
+			_regexMatch += "(%s)?"%(commandArgs[-1].baseRegex())
 		else:
-			print("\tMATCHES:",argMatches.groups()) ##DBEUG
-			return argMatches.groups()
-		#print("TOTAL REGEX MATCH:",_stringMatch) ##DEBUG
+			_regexMatch += "(%s)"%(commandArgs[-1].baseRegex())
+		_stringMatch = re.compile(r'^'+_regexMatch+'$')
+		print("\t",_stringMatch) ##DEBUG
+		result = _stringMatch.search(args)
+		if result is None and len(commandArgs) != 0:
+			raise commandError("Command failed to match arguments.")
+		if result is not None:
+			return result.groupdict()
+		else:
+			return {}
 	def createUsage(self, command):
 		'''Returns a formatted Usage string.'''
 		if  not command.config['args']:
-			return "Usage: %s%s\t<No arguments>"%(self.commandData.highlightChar, command.config['command_str'])
+			return "Usage ([optional], <required>): %s%s\t<No arguments>"%(self.commandData.highlightChar, command.config['command_str'])
 		else:
-			return "Usage: %s%s\t%s"%(self.commandData.highlightChar,command.config['command_str'],self.argList(command.config['args']))
+			return "Usage ([optional], <required>): %s%s\t%s"%(self.commandData.highlightChar,command.config['command_str'],self.argList(command.config['args']))
 	def argList(self, args):
 		'''Assembles and returns a formatted argument list.'''
 		_argList = list(args)
 		for i, arg in enumerate(_argList):
-			_argList[i] = '<'+repr(arg).split(':')[0][1:]+'>'
+			_argList[i] = arg.describe()
 		_argList = ' '.join(_argList)
 		return _argList
 	def run(self):
 		'''Runs the command's run() function, then signals that the thread is finished.'''
 		try:
 			validArgs = self.validateArgs(self.commandData.args, self.command.config['args'])
-			print("VALID ARGS:",validArgs) ##DEBUG
-			if self.command.config['op_args']:
-				opArgs = self.validateArgs(self.commandData.args, self.command.config['op_args'], True)
+		except Exception as e:
+			exc_type, exc_value, exc_traceback = sys.exc_info()
+			errMsg = traceback.format_exception_only(exc_type,exc_value)[0]
+			if exc_type is commandError:
+				errMsg = errMsg.split(':')[1]
+				self.socket.notice(self.commandData.nick, self.commandData.command+": Invalid syntax: "+errMsg)
+				self.socket.notice(self.commandData.nick, self.createUsage(self.command))
 			else:
-				opArgs = None
-		except commandError as e:
-			self.socket.notice(self.commandData.nick, self.commandData.command+": Invalid syntax - "+e.msg)
-			self.socket.notice(self.commandData.nick, self.createUsage(self.command))
-			if self.command.config['op_args']:
-				self.socket.notice(self.commandData.nick, "Optional Arguments:\t"+self.argList(self.command.config['op_args']))
-			self.parent.log.error(str(e))
+				self.socket.notice(self.commandData.nick, "Command '"+str(self.command)+"' has critically failed. See logs for more information")
+				self.parent.log.exception(e)
 			self.parent.removeThread(self, self.user)
 			return
 		try:
-			print("OPTIONAL ARGS:",opArgs) ##DEBUG
-			self.command.run(self, *validArgs, optionalArgs=opArgs)
+			self.command.run(self, **validArgs)
 			self.parent.removeThread(self, self.user)
 		except Exception as e:
 			self.socket.notice(self.commandData.nick, "Command '"+str(self.command)+"' has critically failed. See logs for more information")
