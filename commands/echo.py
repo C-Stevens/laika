@@ -1,13 +1,13 @@
-from src.datatypes import Type
+from src.argument import *
 
-def run(self, *args):
-	self.commandData.printData() ##DEBUG
-	self.socket.sendToChannel(self.commandData.channel, args[0])
+def run(self, **kwargs):
+	message = kwargs.get('msg')
+	self.socket.sendToChannel(self.commandData.channel, message)
 
 config = {
 	'name' : 'Echo',
 	'command_str' : 'echo',
-	'args' : (Type.msg,),
+	'args' : [Argument(type=Type.msg, optional=False, name="msg")],
 	'auth' : False,
 	'help' : "Repeats input back into the origin channel."
 }

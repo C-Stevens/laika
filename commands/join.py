@@ -1,12 +1,13 @@
-from src.datatypes import Type
+from src.argument import *
 
-def run(self, *args):
-	self.socket.joinChannels(args[0])
+def run(self, **kwargs):
+	channel = kwargs.get('channel')
+	self.socket.joinChannels(channel)
 
 config = {
 	'name' : 'Join',
 	'command_str' : 'join',
-	'args' : (Type.channel,),
+	'args' : [Argument(type=Type.channel, optional=False, name="channel")],
 	'auth' : True,
 	'help' : "Has the bot join a channel or a set of channels."
 }

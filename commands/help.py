@@ -1,17 +1,16 @@
-from src.datatypes import Type
+from src.argument import *
 import src.format
 
-def run(self, *args, **kwargs):
+def run(self, **kwargs):
 	_helpPrefix = src.format.bold("help | ")
+	command = kwargs.get('command')
 	for i in self.parent.commandList:
-		if args[0] == i.config['command_str']:
+		if command == i.config['command_str']:
 			self.socket.notice(self.commandData.nick, _helpPrefix+i.config['name'])
 			self.socket.notice(self.commandData.nick, _helpPrefix+i.config['help'])
 			self.socket.notice(self.commandData.nick, _helpPrefix+self.createUsage(i))
-			if i.config['op_args']:
-				self.socket.notice(self.commandData.nick, _helpPrefix+"Optional Arguments:\t"+self.argList(i.config['op_args']))
 			return
-	self.socket.notice(self.commandData.nick, _helpPrefix+"Help information for "+src.format.bold(args[0])+" not found.")
+	self.socket.notice(self.commandData.nick, _helpPrefix+"Help information for "+src.format.bold(command)+" not found.")
 	_friendlyCommandList = []
 	for i in self.parent.commandList:
 		_friendlyCommandList.append(i.config['command_str'])
@@ -22,8 +21,7 @@ def run(self, *args, **kwargs):
 config = {
 	'name' : 'Help',
 	'command_str' : 'help',
-	'args' : (Type.msg,),
-	'op_args' : False,
+	'args' : [Argument(type=Type.msg, optional=False, name="command")],
 	'auth' : False,
 	'help' : "Reports help and usage information for a command."
 }
