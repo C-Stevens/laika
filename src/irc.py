@@ -90,7 +90,7 @@ class socketConnection:
 			self.socketQueue.addToQueue("PART "+self.channelParse(channel)+"\r\n")
 	def sendToChannel(self, channel, message):
 		'''Sends specified message to the specified channel.'''
-		self.socketQueue.addToQueue("PRIVMSG "+self.channelParse(channel)+" :"+message+"\r\n")
+		self.socketQueue.addToQueue("PRIVMSG "+channel+" :"+message+"\r\n")
 	def quit(self, message=None):
 		'''Disconnects from the irc server with optional message.'''
 		if message is not None:
@@ -99,6 +99,33 @@ class socketConnection:
 			self.socketQueue.addToQueue("QUIT\r\n")
 		time.sleep(.5)
 		self.runState = False # Stop further socket sends
+	def kick(self, user, channel, message=None):
+		'''Kicks specefied user from specified channel with optional message.'''
+		if message is not None:
+			self.socketQueue.addToQueue("KICK "+channel+" "+user+" :"+message+"\r\n")
+		else:
+			self.socketQueue.addToQueue("KICK "+channel+" "+user+"\r\n")
+	def topic(self, channel, topic):
+		'''Sets a new topic for the provided channel.'''
+		self.socketQueue.addToQueue("TOPIC "+channel+" :"+topic+"\r\n")
+	def userMode(self, mode):
+		'''Applies the specefied user modes.'''
+		self.socketQueue.addToQueue("MODE "+mode+"\r\n")
+	def channelMode(self, channel, mode, extraArgs=None):
+		'''Applies the specefied modes to the specefied channel, with an optional field at end for extra arguments.'''
+		if extraArgs:
+			self.socketQueue.addToQueue("MODE "+channel+" "+modes+" "+exrtaArgs+"\r\n")
+		else:
+			self.socketQueue.addToQueue("MODE "+channel+" "+modes+"\r\n")
+	def invite(self, nick, channel):
+		'''Invites specefied nick to specified channel.'''
+		self.socketQueue.addToQueue("INVITE "+nick+" "+channel+"\r\n")
+	def time(self, server=None):
+		'''Requests time from current server, or specefied server if provided.'''
+		if server:
+			self.socketQueue.addToQueue("TIME "+server+"\r\n")
+		else:
+			self.socketQueue.addToQueue("TIME\r\n")
 	def nsIdentify(self, nick, password, waitForMask=False):
 		'''Identifies the bot's nick with NickServ.'''
 		if password is not None:
