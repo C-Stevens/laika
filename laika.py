@@ -21,8 +21,17 @@ if __name__ == "__main__":
 	botConfigs = [os.path.abspath(os.path.join('./config', i)) for i in os.listdir('./config') if i.endswith('.yaml')]
 	botPool = {}
 	for i in botConfigs:
-		botPool[i] = yaml.load(open(i, "r").read(-1))
-		#botPool.append(imp.load_source(os.path.splitext(os.path.basename(i))[0], i))
+		try:
+			botPool[i] = yaml.load(open(i, "r").read(-1))
+			if type(botPool[i]) is not dict:
+				rootLog.error("Config '"+i+"' malformed, import aborted")
+				del botPool[i]
+		except Exception as e:
+			rootLog.error("Failed to load log:"+i)
+			rootLog.exception(e)
+	if not botPool:
+		rootLog.critical("No bots could be loaded")
+		sys.exit(1)
 	rootLog.info("Bot config files loaded")
 	rootLog.debug("Bot Pool: %s",botPool)
 

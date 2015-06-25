@@ -42,7 +42,11 @@ class bot:
 		'''Import all commands found in ./commands.'''
 		command_paths = [os.path.abspath(os.path.join('./commands', i)) for i in os.listdir('./commands') if i.endswith('.py')]
 		for i in command_paths:
-			self.command_list.append(imp.load_source(os.path.splitext(os.path.basename(i))[0], i))
+			try:
+				self.command_list.append(imp.load_source(os.path.splitext(os.path.basename(i))[0], i))
+			except Exception as e:
+				self.logger.error("Failed to import module: %s", i)
+				self.logger.exception(e)
 		self.logger.debug("Loaded Commands: %s", self.command_list)
 	def parse(self, line):
 		'''Deal with lines coming off the socket.'''
@@ -72,6 +76,8 @@ class bot:
 					line_info.hostname = line[0].split(splitOn)[1].split('@')[1]
 					line_info.msgType = line[1]
 					line_info.channel = line[2]
+					if line_info.channel == self.nick: # Direct PM responses to the user who sent the PM
+						line_info.channel = line_info.nick
 					line_info.command = firstWord[1:]
 					line_info.highlightChar = self.highlightChar
 					line_info.args = ' '.join(line[4:])
