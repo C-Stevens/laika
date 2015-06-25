@@ -1,11 +1,14 @@
 import enum
 
-channelRegex = '[#|&]+[^, ]{1,200}'
-nickRegex = '[^0-9\-#]{1}([0-9a-zA-z\-\{\}\^\[\]\\\][^#])+'
-msgRegex = '.*'
-umodeRegex = '[+-]{1}[iwso]{1,4}'
-cmodeRegex = '[+-]{1}[opsitnbv]{1,8}'
-numRegex = '[\d|.]+'
+channelRegex = r'[#|&]+[^, ]{1,200}'
+nickRegex = '^[\\]\\[{}^a-zA-Z][-\\]\\[\\\\{}^\\w]*?$'
+msgRegex = r'.*'
+umodeRegex = r'(?:[+-][iwso]+)+'
+cmodeRegex = r'(?:[+-][opsitnbv]+)+'
+intRegex = r'\d+'
+negintRegex = r'-?\d+'
+floatRegex = r'\d+(?:\.\d+)?'
+negfloatRegex = r'\d+(?:\.\d+)?'
 
 class Type(enum.Enum):
 	channel = 0
@@ -13,7 +16,11 @@ class Type(enum.Enum):
 	msg = 2
 	usermode = 3
 	channelmode = 4
-	num = 5
+	int = 5
+	negint = 6
+	float = 7
+	negfloat = 8
+
 	def __str__(self):
 		'''Provides a way to access enum name through str.'''
 		return self.name
@@ -29,8 +36,14 @@ class Type(enum.Enum):
 			return umodeRegex
 		elif self is Type.channelmode:
 			return cmodeRegex
-		elif self is Type.num:
-			return numRegex
+		elif self is Type.int:
+			return intRegex
+		elif self is Type.negint:
+			return negintRegex
+		elif self is Type.float:
+			return floatRegex
+		elif self is Type.negfloat:
+			return negfloatRegex
 
 class Argument:
 	def __init__(self, type, optional, name):
