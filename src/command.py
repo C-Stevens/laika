@@ -74,17 +74,8 @@ class commandThread(threading.Thread):
 			raise commandError("Command requested arguments but recieved none.")
 		if args and len(commandArgs) == 0:
 			raise commandError("Command requested no arguments but arguments were recieved.")
-		_regexMatch = ''
-		if len(commandArgs) > 1:
-			for arg in commandArgs[:-1]:
-				if arg.optional:
-					_regexMatch += "(?:%s\s)?"%(arg.baseRegex())
-				else:
-					_regexMatch += "(?:%s\s)"%(arg.baseRegex())
-		if commandArgs[-1].optional:
-			_regexMatch += "(?:%s)?"%(commandArgs[-1].baseRegex())
-		else:
-			_regexMatch += "(?:%s)"%(commandArgs[-1].baseRegex())
+
+		_regexMatch = ''.join(r'(?:%s(?:\s|$))%s' % (arg.baseRegex(), '?' if arg.optional else '') for arg in commandArgs)
 		_stringMatch = re.compile(r'^'+_regexMatch+'$')
 		result = _stringMatch.search(args)
 		if result is None and len(commandArgs) != 0:
@@ -134,6 +125,7 @@ class commandThread(threading.Thread):
 class commandData:
 	def __init__(self):
 		self.identd = ''
+		self.botnick = ''
 		self.nick = ''
 		self.user = ''
 		self.hostname = ''
@@ -145,6 +137,7 @@ class commandData:
 	def printData(self):
 		''' Print out all held data for debug.'''
 		print("identd :",self.identd)
+		print("botnick :",self.botnick)
 		print("nick :",self.nick)
 		print("user :",self.user)
 		print("hostname :",self.hostname)
