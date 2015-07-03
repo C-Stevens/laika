@@ -1,7 +1,7 @@
 import enum
 
 channelRegex = r'[#|&]+[^, ]{1,200}'
-nickRegex = '^[\\]\\[{}^a-zA-Z][-\\]\\[\\\\{}^\\w]*?$'
+nickRegex = '[\\]\\[{}^a-zA-Z][-\\]\\[\\\\{}^\\w]*?'
 msgRegex = r'.*'
 umodeRegex = r'(?:[+-][iwso]+)+'
 cmodeRegex = r'(?:[+-][opsitnbv]+)+'
