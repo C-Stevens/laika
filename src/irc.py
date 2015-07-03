@@ -100,7 +100,7 @@ class socketConnection:
 		time.sleep(.5)
 		self.runState = False # Stop further socket sends
 	def kick(self, user, channel, message=None):
-		'''Kicks specefied user from specified channel with optional message.'''
+		'''Kicks specified user from specified channel with optional message.'''
 		if message is not None:
 			self.socketQueue.addToQueue("KICK "+channel+" "+user+" :"+message+"\r\n")
 		else:
@@ -108,24 +108,27 @@ class socketConnection:
 	def topic(self, channel, topic):
 		'''Sets a new topic for the provided channel.'''
 		self.socketQueue.addToQueue("TOPIC "+channel+" :"+topic+"\r\n")
-	def userMode(self, mode):
-		'''Applies the specefied user modes.'''
-		self.socketQueue.addToQueue("MODE "+mode+"\r\n")
-	def channelMode(self, channel, mode, extraArgs=None):
-		'''Applies the specefied modes to the specefied channel, with an optional field at end for extra arguments.'''
+	def userMode(self, user, mode):
+		'''Applies the specified user modes.'''
+		self.socketQueue.addToQueue("MODE "+user+" "+mode+"\r\n")
+	def channelMode(self, channel, modes, extraArgs=None):
+		'''Applies the specified modes to the specified channel, with an optional field at end for extra arguments.'''
 		if extraArgs:
-			self.socketQueue.addToQueue("MODE "+channel+" "+modes+" "+exrtaArgs+"\r\n")
+			self.socketQueue.addToQueue("MODE "+channel+" "+modes+" "+extraArgs+"\r\n")
 		else:
 			self.socketQueue.addToQueue("MODE "+channel+" "+modes+"\r\n")
 	def invite(self, nick, channel):
-		'''Invites specefied nick to specified channel.'''
+		'''Invites specified nick to specified channel.'''
 		self.socketQueue.addToQueue("INVITE "+nick+" "+channel+"\r\n")
 	def time(self, server=None):
-		'''Requests time from current server, or specefied server if provided.'''
+		'''Requests time from current server, or specified server if provided.'''
 		if server:
 			self.socketQueue.addToQueue("TIME "+server+"\r\n")
 		else:
 			self.socketQueue.addToQueue("TIME\r\n")
+	def nick(self, nick):
+		'''Sets nickname to specified nick.'''
+		self.socketQueue.addToQueue("NICK "+nick+"\r\n")
 	def nsIdentify(self, nick, password, waitForMask=False):
 		'''Identifies the bot's nick with NickServ.'''
 		if password is not None:
@@ -141,7 +144,7 @@ class socketConnection:
 		'''Issues a CTCP ACTION command to specified channel.'''
 		self.socketQueue.addToQueue("PRIVMSG "+self.channelParse(channel)+" :\u0001ACTION "+action+"\u0001\r\n")
 	def notice(self, nick, message):
-		'''Issues a notice to the specefied user with the specefied message.'''
+		'''Issues a notice to the specified user with the specified message.'''
 		self.socketQueue.addToQueue("NOTICE "+nick+" :"+message+"\r\n")
 
 class socketQueue:
@@ -151,7 +154,7 @@ class socketQueue:
 		self.ircLog = ircLog
 		self.socketQueue = queue.Queue()
 		self.encoding = 'utf-8'
-		self.t = threading.Thread(target=self.flushQueue, name="queueWorker")
+		self.t = threading.Thread(target=self.flushQueue, name="socket_queueWorker")
 		self.t.start()
 	def addToQueue(self, message):
 		'''Adds a given string to the socket queue.'''
@@ -164,6 +167,6 @@ class socketQueue:
 			except queue.Empty:
 				continue
 			if self.parent.runState is True: # Additional runState check to avoid sending to a closed socket
-				self.ircLog.socketLog.info(_queueItem.replace('\r\n','')) # Log socket send
 				self.socket.send((_queueItem).encode(self.encoding))
+				self.ircLog.socketLog.info(_queueItem.replace('\r\n','')) # Log socket send
 		self.parent.socketShutdown()
