@@ -71,6 +71,7 @@ class bot:
 					line_info.identd = True
 					splitOn = '!'
 				try:
+					line_info.botnick = self.nick
 					line_info.nick = line[0].split(splitOn)[0][1:]
 					line_info.user = line[0].split(splitOn)[1].split('@')[0]
 					line_info.hostname = line[0].split(splitOn)[1].split('@')[1]
