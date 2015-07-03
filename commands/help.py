@@ -10,6 +10,7 @@ def run(self, **kwargs):
 			_friendlyCommandList.append(i.config['command_str'])
 		_friendlyCommandList = ', '.join(_friendlyCommandList)
 		self.socket.notice(self.commandData.nick, _helpPrefix+"Avaliable commands: "+_friendlyCommandList)
+		self.socket.notice(self.commandData.nick, _helpPrefix+"Type "+self.commandData.highlightChar+"help "+src.format.bold("<command name>")+" for help information on a specific command")
 		return
 
 	for i in self.parent.commandList:
