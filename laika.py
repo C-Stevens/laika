@@ -3,10 +3,10 @@ import sys
 import imp
 import src
 from threading import Thread
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "lib/pyyaml/lib3"))
-import yaml
 import argparse
 from _version import __version__
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "lib/pyyaml/lib3"))
+import yaml
 
 argParser = argparse.ArgumentParser(description="A modular chat bot for the IRC protocol.")
 argParser.add_argument("--version", action='version', version=__version__, help="Displays version information and exits")
