@@ -19,7 +19,7 @@ class commandManager:
 		self.maxUserThreads = 5 # Default user thread pool size
 		self.threadPools = {}
 	def spawnThread(self, commandData, socket):
-		'''Spawns a command thread if given the OK from runValidator'''
+		'''Spawns a command thread if user is authorized and has room in their thread pool.'''
 		for i in self.commandList:
 			if commandData.command == i.config['command_str']:
 				if i.config['auth'] is False or i.config['auth'] is True and commandData.nick in self.authList:
@@ -39,6 +39,11 @@ class commandManager:
 					socket.notice(commandData.nick, "You are not authorized to use the "+format.bold(commandData.command)+" command")
 					return
 		socket.notice(commandData.nick, "Command "+format.bold(commandData.command)+" not found")
+		_friendlyCommandList = []
+		for i in self.commandList:
+			_friendlyCommandList.append(i.config['command_str'])
+		_friendlyCommandList = ', '.join(_friendlyCommandList)
+		socket.notice(commandData.nick, "Available commands: "+_friendlyCommandList)
 	def userThreadCount(self, user):
 		'''Returns the number of active threads in the provided user's thread pool.'''
 		try:
@@ -71,9 +76,9 @@ class commandThread(threading.Thread):
 			if not i.optional:
 				requiredArgs += 1
 		if not args and requiredArgs != 0:
-			raise commandError("Command requested arguments but recieved none.")
+			raise commandError("Command requested arguments but received none.")
 		if args and len(commandArgs) == 0:
-			raise commandError("Command requested no arguments but arguments were recieved.")
+			raise commandError("Command requested no arguments but arguments were received.")
 
 		_regexMatch = ''.join(r'(?:%s(?:\s|$))%s' % (arg.baseRegex(), '?' if arg.optional else '') for arg in commandArgs)
 		_stringMatch = re.compile(r'^'+_regexMatch+'$')
@@ -109,7 +114,7 @@ class commandThread(threading.Thread):
 				self.socket.notice(self.commandData.nick, self.commandData.command+": Invalid syntax: "+errMsg)
 				self.socket.notice(self.commandData.nick, self.createUsage(self.command))
 			else:
-				self.socket.notice(self.commandData.nick, "Command '"+str(self.command)+"' has critically failed. See logs for more information")
+				self.socket.notice(self.commandData.nick, "Command '"+self.command.__name__+"' has critically failed. See logs for more information")
 				self.parent.log.exception(e)
 			self.parent.removeThread(self, self.user)
 			return
@@ -117,7 +122,7 @@ class commandThread(threading.Thread):
 			self.command.run(self, **validArgs)
 			self.parent.removeThread(self, self.user)
 		except Exception as e:
-			self.socket.notice(self.commandData.nick, "Command '"+str(self.command)+"' has critically failed. See logs for more information")
+			self.socket.notice(self.commandData.nick, "Command '"+self.command.__name__+"' has critically failed. See logs for more information")
 			self.parent.log.exception(e)
 			self.parent.removeThread(self, self.user)
 			return
