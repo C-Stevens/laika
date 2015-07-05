@@ -1,8 +1,7 @@
 from src.argument import *
 
 def run(self, **kwargs):
-	channel = kwargs.get('channel')
-	self.socket.joinChannels(channel)
+	self.socket.joinChannels(kwargs.get('channel'))
 
 config = {
 	'name' : 'Join',

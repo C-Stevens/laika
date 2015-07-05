@@ -1,12 +1,7 @@
 from src.argument import *
 
 def run(self, **kwargs):
-	message = kwargs.get('msg')
-	channel = kwargs.get('channel')
-	if channel:
-		self.socket.sendToChannel(channel, message)
-	else:
-		self.socket.sendToChannel(self.commandData.channel, message)
+	self.socket.sendToChannel(kwargs.get('channel') or self.commandData.channel, kwargs.get('msg'))
 
 config = {
 	'name' : 'Echo',

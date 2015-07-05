@@ -1,12 +1,7 @@
 from src.argument import *
 
 def run(self, **kwargs):
-	channel = kwargs.get('channel')
-	topic = kwargs.get('topic')
-	if channel:
-		self.socket.topic(channel, topic)
-	else:
-		self.socket.topic(self.commandData.channel, topic)
+	self.socket.topic(kwargs.get('channel') or self.commandData.channel, kwargs.get('topic'))
 
 config = {
 	'name' : 'Set Topic',

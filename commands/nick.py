@@ -1,8 +1,7 @@
 from src.argument import *
 
 def run(self, **kwargs):
-	nick = kwargs.get('nick')
-	self.socket.nick(nick)
+	self.socket.nick(kwargs.get('nick'))
 
 config = {
 	'name' : 'nick',

@@ -1,9 +1,7 @@
 from src.argument import *
 
 def run(self, **kwargs):
-	nick = kwargs.get('nick')
-	channel = kwargs.get('channel')
-	self.socket.invite(nick, channel)
+	self.socket.invite(kwargs.get('nick'), kwargs.get('channel'))
 
 config = {
 	'name' : 'Invite',

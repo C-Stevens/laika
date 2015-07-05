@@ -1,18 +1,7 @@
 from src.argument import *
 
 def run(self, **kwargs):
-	channel = kwargs.get('channel')
-	quitMsg = kwargs.get('quitMessage')
-	if channel:
-		if quitMsg:
-			self.socket.partChannels(channel, quitMsg)
-			return
-		self.socket.partChannels(channel)
-		return
-	if quitMsg:
-		self.socket.partChannels(self.commandData.channel, quitMsg)
-		return
-	self.socket.partChannels(self.commandData.channel)
+	self.socket.partChannels(kwargs.get('channel') or self.commandData.channel, kwargs.get('quitMessage'))
 
 config = {
 	'name' : 'Part',

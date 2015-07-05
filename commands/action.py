@@ -1,12 +1,7 @@
 from src.argument import *
 
 def run(self, **kwargs):
-	channel = kwargs.get('channel')
-	msg = kwargs.get('message')
-	if channel:
-		self.socket.action(channel, msg)
-	else:
-		self.socket.action(self.commandData.channel,msg)
+	self.socket.action(kwargs.get('channel') or self.commandData.channel, kwargs.get('message'))
 
 config = {
 	'name' : 'Action',

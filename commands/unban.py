@@ -1,8 +1,7 @@
 from src.argument import *
 
 def run(self, **kwargs):
-	banmask = kwargs.get('banmask')
-	self.socket.channelMode(self.commandData.channel, "-b", banmask)
+	self.socket.channelMode(self.commandData.channel, "-b", kwargs.get('banmask'))
 
 config = {
 	'name' : 'Unban',

@@ -1,8 +1,7 @@
 from src.argument import *
 
 def run(self, **kwargs):
-	modes = kwargs.get('modes')
-	self.socket.userMode(self.commandData.botnick, modes)
+	self.socket.userMode(self.commandData.botnick, kwargs.get('modes'))
 
 config = {
 	'name' : 'Set Mode',

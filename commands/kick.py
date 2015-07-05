@@ -1,12 +1,7 @@
 from src.argument import *
 
 def run(self, **kwargs):
-	nick = kwargs.get('nick')
-	channel = kwargs.get('channel')
-	if not channel:
-		channel = self.commandData.channel
-	message = kwargs.get('message')
-	self.socket.kick(nick, channel, message)
+	self.socket.kick(kwargs.get('nick'), kwargs.get('channel') or self.commandData.channel, kwargs.get('message'))
 
 config = {
 	'name' : 'Kick',

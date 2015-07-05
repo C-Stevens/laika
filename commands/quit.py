@@ -1,11 +1,7 @@
 from src.argument import *
 
 def run(self, **kwargs):
-	message = kwargs.get('quitMsg')
-	if message:
-		self.socket.quit(message)
-		return
-	self.socket.quit()
+	self.socket.quit(kwargs.get('quitMsg'))
 
 config = {
 	'name' : 'quit',

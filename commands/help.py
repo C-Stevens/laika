@@ -9,7 +9,7 @@ def run(self, **kwargs):
 		for i in self.parent.commandList:
 			_friendlyCommandList.append(i.config['command_str'])
 		_friendlyCommandList = ', '.join(_friendlyCommandList)
-		self.socket.notice(self.commandData.nick, _helpPrefix+"Avaliable commands: "+_friendlyCommandList)
+		self.socket.notice(self.commandData.nick, _helpPrefix+"Available commands: "+_friendlyCommandList)
 		self.socket.notice(self.commandData.nick, _helpPrefix+"Type "+self.commandData.highlightChar+"help "+src.format.bold("<command name>")+" for help information on a specific command")
 		return
 
@@ -19,7 +19,7 @@ def run(self, **kwargs):
 			self.socket.notice(self.commandData.nick, _helpPrefix+i.config['help'])
 			self.socket.notice(self.commandData.nick, _helpPrefix+self.createUsage(i))
 			return
-	self.socket.notice(self.commandData.nick, _helpPrefix+"Help information for "+src.format.bold(command)+" not found.")
+	self.socket.notice(self.commandData.nick, _helpPrefix+"Help information for "+src.format.bold(command)+" not found")
 
 config = {
 	'name' : 'Help',
