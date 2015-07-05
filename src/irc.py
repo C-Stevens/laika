@@ -17,7 +17,7 @@ class socketConnection:
 		self.runState = True
 		self.socketQueue = socketQueue(self, self.socket, self.ircLog)
 	def readFromSocket(self):
-		'''Reads and returns data out of the socket. Aborts the connection and runState if socket times out.'''
+		'''Returns data out of the socket. Aborts the connection and runState if socket times out.'''
 		if self.runState is False:
 			return None
 		try:
@@ -47,19 +47,19 @@ class socketConnection:
 	def readQueue(self):
 		'''Safely assemble an array of queue items without popping anything off.'''
 		queue = []
-		if self.messageQueue.empty() is False:
+		if not self.messageQueue.empty():
 			for i in range(self.messageQueue.qsize()-1,-1,-1): # Walk backwards through items
 				queue.append(self.messageQueue.queue[i])
 		return queue
 	def connect(self, host, port, nick, ident, userMode, serverPass=None,):
-		'''Establish an IRC connection'''
+		'''Establish an IRC connection.'''
 		self.socket.connect((host, port))
-		time.sleep(0.2)
+		time.sleep(0.2) # Wait to account for any slight network hiccups
 		if serverPass is not None:
 			self.socketQueue.addToQueue("PASS "+serverPass+"\r\n")
-			time.sleep(0.2)
+			time.sleep(0.2) # Ditto above
 		self.socketQueue.addToQueue("NICK "+nick+"\r\n")
-		time.sleep(0.2)
+		time.sleep(0.2) # Ditto above
 		self.socketQueue.addToQueue("USER "+ident+" "+userMode+" * :"+nick+"\r\n")
 	def socketShutdown(self):
 		'''Safely shuts down and closes the socket.'''
@@ -69,39 +69,33 @@ class socketConnection:
 		'''Properly respond to server PINGs.'''
 		self.log.info("PONG "+host)
 		self.socketQueue.addToQueue("PONG "+host+"\r\n")
-	def channelParse(self, channel):
-		'''Returns a properly formatted channel for sending out the socket.'''
-		if not channel.startswith("#"):
-			return "#" + channel
-		else:
-			return channel
 	def joinChannels(self, channels):
-		'''Join all channels in a given array.'''
-		if type(channels) == list:
+		'''Join given channel, or all channels in a given array.'''
+		if type(channels) is list:
 			for _channel in channels:
-				self.socketQueue.addToQueue("JOIN "+self.channelParse(_channel)+"\r\n")
-		elif type(channels) == str:
-			self.socketQueue.addToQueue("JOIN "+self.channelParse(channels)+"\r\n")
+				self.socketQueue.addToQueue("JOIN "+_channel+"\r\n")
+		elif type(channels) is str:
+			self.socketQueue.addToQueue("JOIN "+channels+"\r\n")
 	def partChannels(self, channel, message=None):
 		'''Leave a single channel with optional message.'''
 		if message is not None:
-			self.socketQueue.addToQueue("PART "+self.channelParse(channel)+" :"+message+"\r\n")
+			self.socketQueue.addToQueue("PART "+channel+" :"+message+"\r\n")
 		else:
-			self.socketQueue.addToQueue("PART "+self.channelParse(channel)+"\r\n")
+			self.socketQueue.addToQueue("PART "+channel+"\r\n")
 	def sendToChannel(self, channel, message):
 		'''Sends specified message to the specified channel.'''
 		self.socketQueue.addToQueue("PRIVMSG "+channel+" :"+message+"\r\n")
 	def quit(self, message=None):
-		'''Disconnects from the irc server with optional message.'''
+		'''Disconnects from the IRC server with optional message.'''
 		if message is not None:
 			self.socketQueue.addToQueue("QUIT :"+message+"\r\n")
 		else:
 			self.socketQueue.addToQueue("QUIT\r\n")
-		time.sleep(.5)
-		self.runState = False # Stop further socket sends
+		time.sleep(.5) # Preventative wait measure to let any concurrent socket processes end
+		self.runState = False # Terminate connection
 	def kick(self, user, channel, message=None):
 		'''Kicks specified user from specified channel with optional message.'''
-		if message is not None:
+		if message:
 			self.socketQueue.addToQueue("KICK "+channel+" "+user+" :"+message+"\r\n")
 		else:
 			self.socketQueue.addToQueue("KICK "+channel+" "+user+"\r\n")
@@ -142,7 +136,7 @@ class socketConnection:
 				time.sleep(_backoff)
 	def action(self, channel, action):
 		'''Issues a CTCP ACTION command to specified channel.'''
-		self.socketQueue.addToQueue("PRIVMSG "+self.channelParse(channel)+" :\u0001ACTION "+action+"\u0001\r\n")
+		self.socketQueue.addToQueue("PRIVMSG "+channel+" :\u0001ACTION "+action+"\u0001\r\n")
 	def notice(self, nick, message):
 		'''Issues a notice to the specified user with the specified message.'''
 		self.socketQueue.addToQueue("NOTICE "+nick+" :"+message+"\r\n")
@@ -163,7 +157,7 @@ class socketQueue:
 		'''Sends out all messages in the queue to the socket.'''
 		while self.parent.runState is True:
 			try:
-				_queueItem = self.socketQueue.get(timeout=1)
+				_queueItem = self.socketQueue.get(timeout=0.5)
 			except queue.Empty:
 				continue
 			if self.parent.runState is True: # Additional runState check to avoid sending to a closed socket

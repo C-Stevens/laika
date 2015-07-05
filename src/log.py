@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+import traceback
 
 class levelFilter:
 	def __init__(self, level):
@@ -46,7 +47,7 @@ class basicLogger(logging.Logger):
 		self.setLevel(logging.NOTSET)
 		self.addHandler(logging.FileHandler(self.logPath))
 	def log(self, msg):
-		'''Log all messages to self as only of level logging.INFO.'''
+		'''Log all messages to self only as of level logging.INFO.'''
 		self.info(msg)
 
 class channelLogger(logging.Logger):
@@ -58,8 +59,8 @@ class channelLogger(logging.Logger):
 		fh.setFormatter(logging.Formatter("%(asctime)s %(message)s", kwargs.get('timeStampFormat','[%Y-%m-%d %H:%M:%S]')))
 		self.addHandler(fh)
 	def log(self, nick, msg):
-		'''Format messsage and log to self as only of level logging.INFO.'''
-		self.info("<%(nick)s> %(msg)s", {'nick':nick, 'msg':msg})
+		'''Format message and log to self as only of level logging.INFO.'''
+		self.info(self.kwargs.get('messageFormat') or "<%(nick)s> %(msg)s", {'nick':nick, 'msg':msg})
 
 class ircLogManager:
 	def __init__(self, name, **kwargs):
@@ -91,5 +92,9 @@ class ircLogManager:
 			message = ' '.join(line[3:])[1:]
 			self.channelLogs[channel].log(nick, message)
 		except Exception as e:
-			sys.stderr.write(e)
+			## Unfortunately this logs directly to stderr in the console, making any truly silent or non-verbose
+			## option for the program not possible. Passing this object the error logging object is ugly and this
+			## object should not be able to depend on the error logging object existing in the first place. In the
+			## future, there ought to be a broader umbrella log managing object that can be queried for individual
+			## log objects. For now, it dumps to stderr if something messes up.
 			traceback.print_exc(file=sys.stderr)
