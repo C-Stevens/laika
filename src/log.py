@@ -56,7 +56,7 @@ class channelLogger(logging.Logger):
 		self.kwargs = kwargs
 		self.setLevel(logging.NOTSET)
 		fh = logging.FileHandler(logPath)
-		fh.setFormatter(logging.Formatter("%(asctime)s %(message)s", kwargs.get('timeStampFormat','[%Y-%m-%d %H:%M:%S]')))
+		fh.setFormatter(logging.Formatter("%(asctime)s %(message)s", kwargs.get('timeStampFormat') or '[%Y-%m-%d %H:%M:%S]'))
 		self.addHandler(fh)
 	def log(self, nick, msg):
 		'''Format message and log to self as only of level logging.INFO.'''
@@ -75,13 +75,13 @@ class ircLogManager:
 		self.serverLogPath = os.path.join(self._logRoot, self.botName)
 		if not os.path.exists(self.serverLogPath):
 			os.makedirs(self.serverLogPath)
-		self.channelLogPath = self.kwargs.get('channelLogPath', os.path.join(self.serverLogPath, 'channel_log'))
+		self.channelLogPath = self.kwargs.get('channelLogPath') or os.path.join(self.serverLogPath, 'channel_log')
 		if not os.path.exists(self.channelLogPath):
 			os.makedirs(self.channelLogPath)
 	def prepareLogs(self):
 		'''Spawns two basicLogger objects for socket and server logging.'''
-		self.serverLog = basicLogger(os.path.join(self.serverLogPath, self.kwargs.get('serverLogFile','server_log.log')))
-		self.socketLog = basicLogger(os.path.join(self.serverLogPath, self.kwargs.get('socketLogFile','socket_log.log')))
+		self.serverLog = basicLogger(os.path.join(self.serverLogPath, self.kwargs.get('serverLogFile') or 'server_log.log'))
+		self.socketLog = basicLogger(os.path.join(self.serverLogPath, self.kwargs.get('socketLogFile') or 'socket_log.log'))
 	def channelLog(self, channel, line):
 		'''Creates logger for channel if it does not exist, otherwise logs line to appropriate logger.'''
 		if not channel in self.channelLogs: # Log object for this channel needs to be created
