@@ -12,7 +12,7 @@ class bot:
 	def __init__(self, config, botLog, **kwargs):
 		self.loadConfig(config)
 		self.logger = botLog
-		self.ircLogger = log.ircLogManager(kwargs.get('botLogName', config['nick'])) ##DEBUG
+		self.ircLogger = log.ircLogManager(self.botLogName, logRoot=self.logRoot, channelLogPath=self.channelLogPath, serverLogFile=self.serverLogFile, socketLogFile=self.socketLogFile, timeStampFormat=self.timeStampFormat, messageFormat=self.messageFormat) ##DEBUG
 		self.messageQueue = Queue()
 		self.socketWrapper = irc.socketConnection(self.logger, self.ircLogger, self.socket, self.messageQueue)
 		self.command_list = []
@@ -37,6 +37,15 @@ class bot:
 		self.channels 		= config['channels']
 		self.highlightChar 	= config['highlightChar']
 		self.authList 		= config['authList']
+		self.botLogName		= config['log']['botLogName']
+		if not self.botLogName:
+			self.botLogName = self.nick
+		self.logRoot		= config['log']['logRoot']
+		self.channelLogPath	= config['log']['channelLogPath']
+		self.serverLogFile	= config['log']['serverLogFile']
+		self.socketLogFile	= config['log']['socketLogFile']
+		self.timeStampFormat	= config['log']['timeStampFormat']
+		self.messageFormat	= config['log']['messageFormat']
 
 	def load_commands(self):
 		'''Import all commands found in ./commands.'''
@@ -96,15 +105,9 @@ class bot:
 			if line[0][1:].find("NickServ!NickServ@services") != -1: # NickServ notice
 				_nmMessage = ' '.join(str(i) for i in line[3:])[1:] # Reconstruct message
 				if _nmMessage.find("This nickname is registered.") != -1:
-					self.logger.info("Authing to nickserv")
-					if self.mask is True:
-						self.socketWrapper.nsIdentify(self.nick, self.nickPass, True)
-					else:
-						self.socketWrapper.nsIdentify(self.nick, self.nickPass)
+					self.logger.info("Authing to NickServ")
+					self.socketWrapper.nsIdentify(self.nick, self.nickPass, self.mask)
 			return
-	def printConfig(self):
-		'''Prints the object's loaded config for debug.'''
-		print(self.configFile.config)
 	def run(self):
 		'''Main loop for reading data off the socket.'''
 		self.load_commands()
@@ -118,7 +121,7 @@ class bot:
 				line = self.messageQueue.get_nowait()
 				if line is not '': # Ignore leftover items from split('\r\n')
 					try:
-						self.logger.info(line) # TODO: seperate irc logging
+						self.logger.info(line) # TODO: separate irc logging
 					except:
 						pass
 					self.parse(line)
