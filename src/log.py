@@ -13,18 +13,18 @@ class levelFilter:
 class logger(logging.Logger):
 	def __init__(self, **kwargs):
 		logging.Logger.__init__(self, self)		
-		defaultFormat = kwargs.get('defaultFormat', '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+		defaultFormat = kwargs.get('defaultFormat') or "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
-		if kwargs.get('critLog', True):
-			self.addStream(kwargs.get('critLogDir'), logging.CRITICAL, kwargs.get('critLogFormat', defaultFormat))
-		if kwargs.get('errLog', True):
-			self.addStream(kwargs.get('errLogDir'), logging.ERROR, kwargs.get('errLogFormat', defaultFormat))
-		if kwargs.get('warnLog', True):
-			self.addStream(kwargs.get('warnLogDir'), logging.WARNING, kwargs.get('warnLogFormat', defaultFormat))
-		if kwargs.get('infoLog', False):
-			self.addStream(kwargs.get('infoLogDir'), logging.INFO, kwargs.get('infoLogFormat', defaultFormat))
-		if kwargs.get('debugLog', False):
-			self.addStream(kwargs.get('debugLogDir'), logging.DEBUG, kwargs.get('debugLogFormat', defaultFormat))
+		if kwargs.get('critLog') or True:
+			self.addStream(kwargs.get('critLogDir'), logging.CRITICAL, kwargs.get('critLogFormat') or defaultFormat)
+		if kwargs.get('errLog') or True:
+			self.addStream(kwargs.get('errLogDir'), logging.ERROR, kwargs.get('errLogFormat') or defaultFormat)
+		if kwargs.get('warnLog') or True:
+			self.addStream(kwargs.get('warnLogDir'), logging.WARNING, kwargs.get('warnLogFormat') or defaultFormat)
+		if kwargs.get('infoLog') or False:
+			self.addStream(kwargs.get('infoLogDir'), logging.INFO, kwargs.get('infoLogFormat') or defaultFormat)
+		if kwargs.get('debugLog') or False:
+			self.addStream(kwargs.get('debugLogDir'), logging.DEBUG, kwargs.get('debugLogFormat') or defaultFormat)
 	def addStream(self, logDir, logLevel, logFormat):
 		'''Adds a log handler with the specified options to the logger.'''
 		if logDir is not None:
@@ -63,16 +63,15 @@ class channelLogger(logging.Logger):
 		self.info(self.kwargs.get('messageFormat') or "<%(nick)s> %(msg)s", {'nick':nick, 'msg':msg})
 
 class ircLogManager:
-	def __init__(self, name, **kwargs):
+	def __init__(self, **kwargs):
 		self.kwargs = kwargs
-		self.botName = name
 		self._logRoot = os.path.abspath(kwargs.get('logRoot','./log'))
 		self.channelLogs = {}
 		self.prepareDirs()
 		self.prepareLogs()
 	def prepareDirs(self):
 		'''Makes sure all the dirs for logging are present. If not, create them.'''
-		self.serverLogPath = os.path.join(self._logRoot, self.botName)
+		self.serverLogPath = os.path.join(self._logRoot, self.kwargs.get('botLogName'))
 		if not os.path.exists(self.serverLogPath):
 			os.makedirs(self.serverLogPath)
 		self.channelLogPath = self.kwargs.get('channelLogPath') or os.path.join(self.serverLogPath, 'channel_log')
