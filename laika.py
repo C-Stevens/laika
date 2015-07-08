@@ -34,28 +34,30 @@ argParser.add_argument("--debugLogFormat", help="Sets program debug logging form
 args = vars(argParser.parse_args())
 
 def loadConfig():
+	'''Loads config and returns dict from arguments if supplied, or default path if not.'''
 	if args['config']:
 		return yaml.load(args['config'].read(-1))
 	else:
 		return yaml.load(open(os.path.join(os.path.abspath('.'),'laika.cfg'), 'r').read(-1))
 def applyArgs(config):
+	'''Ensures boolean args are of type bool, replaces config values with their argument counterparts if they exist, ensures no logging if quiet argument is passed.'''
 	for argVal in args:
 		if args[argVal] and argVal in ("critLog","errLog","warnLog","infoLog","debugLog"):
 			args[argVal] = validateBool(args[argVal])
 	for val in config:
 		if args[val] is not None and config[val] is not args[val]:
-			print("arg: "+repr(val)) ##DEBUG
-			print("swapping %s for %s"%(repr(config[val]),repr(args[val]))) ##DEBUG
 			config[val] = args[val]
 	if args['quiet']:
 		for i in ('critLog','errLog','warnLog','infoLog','debugLog'):
 			config[i] = False
 def validateBool(arg):
+	'''Converts strings into their respective boolean representations.'''
 	if arg.lower() in ("true", "t", "yes", 1):
 		return True
 	elif arg.lower() in ("false", "f", "no", 0):
 		return False
 def run():
+	'''Main run function.'''
 	config = loadConfig()
 	applyArgs(config)
 	rootLog = src.log.logger(**config)
