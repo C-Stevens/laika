@@ -9,10 +9,10 @@ import src.command as command
 import src.log as log
 
 class bot:
-	def __init__(self, config, botLog, **kwargs):
+	def __init__(self, config, **kwargs):
 		self.loadConfig(config)
-		self.logger = botLog
-		self.ircLogger = log.ircLogManager(self.botLogName, logRoot=self.logRoot, channelLogPath=self.channelLogPath, serverLogFile=self.serverLogFile, socketLogFile=self.socketLogFile, timeStampFormat=self.timeStampFormat, messageFormat=self.messageFormat) ##DEBUG
+		self.logger = log.logger(**self.botLogConfig)
+		self.ircLogger = log.ircLogManager(**self.ircLogConfig)
 		self.messageQueue = Queue()
 		self.socketWrapper = irc.socketConnection(self.logger, self.ircLogger, self.socket, self.messageQueue)
 		self.command_list = []
@@ -37,16 +37,10 @@ class bot:
 		self.channels 		= config['channels']
 		self.highlightChar 	= config['highlightChar']
 		self.authList 		= config['authList']
-		self.botLogName		= config['log']['botLogName']
-		if not self.botLogName:
-			self.botLogName = self.nick
-		self.logRoot		= config['log']['logRoot']
-		self.channelLogPath	= config['log']['channelLogPath']
-		self.serverLogFile	= config['log']['serverLogFile']
-		self.socketLogFile	= config['log']['socketLogFile']
-		self.timeStampFormat	= config['log']['timeStampFormat']
-		self.messageFormat	= config['log']['messageFormat']
-
+		self.botLogConfig	= config['botLog']
+		self.ircLogConfig	= config['ircLog']
+		if not self.ircLogConfig['botLogName']:
+			self.ircLogConfig['botLogName'] = self.nick
 	def load_commands(self):
 		'''Import all commands found in ./commands.'''
 		command_paths = [os.path.abspath(os.path.join('./commands', i)) for i in os.listdir('./commands') if i.endswith('.py')]
@@ -121,7 +115,7 @@ class bot:
 				line = self.messageQueue.get_nowait()
 				if line is not '': # Ignore leftover items from split('\r\n')
 					try:
-						self.logger.info(line) # TODO: separate irc logging
+						self.logger.info(line)
 					except:
 						pass
 					self.parse(line)
