@@ -1,0 +1,16 @@
+defaultFormat   : 
+critLog         : 
+critLogDir      : 
+critLogFormat   : 
+errLog          : 
+errLogDir       : 
+errLogFormat    : 
+warnLog         : 
+warnLogDir      : 
+warnLogFormat   : 
+infoLog         : 
+infoLogDir      : 
+infoLogFormat   : 
+debugLog        : 
+debugLogDir     : 
+debugLogFormat  : 

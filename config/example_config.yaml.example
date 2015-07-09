@@ -1,0 +1,40 @@
+server:
+        host : 
+        port : 
+        ssl  : 
+        pass : 
+nick : 
+nickPass : 
+mask : 
+ident : 
+userMode : 
+channels: 
+        - 
+highlightChar : 
+authList: 
+        - 
+botLog:
+        defaultFormat   : 
+        critLog         : 
+        critLogDir      : 
+        critLogFormat   : 
+        errLog          : 
+        errLogDir       : 
+        errLogFormat    : 
+        warnLog         : 
+        warnLogDir      : 
+        warnLogFormat   : 
+        infoLog         : 
+        infoLogDir      : 
+        infoLogFormat   : 
+        debugLog        : 
+        debugLogDir     : 
+        debugLogFormat  : 
+ircLog:
+        botLogName      : 
+        logRoot         : 
+        serverLogFile   : 
+        socketLogFile   : 
+        channelLogPath  : 
+        timeStampFormat : 
+        messageFormat   : 
