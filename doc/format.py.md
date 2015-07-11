@@ -86,4 +86,4 @@ src.format.italic(src.format.color(src.format.bold("foo"),'cyan','pink'))
 ```
 Yeilds:
 
-![<span style="font-style: italic; font-weight: bold; color: cyan; background-color: pink">foo</span>](img/underline-lightgreen_text-italic.png "Italic, bold, cyan text with a pink background")
+![<span style="font-style: italic; font-weight: bold; color: cyan; background-color: pink">foo</span>](img/italic-cyan_text-pink_background-bold "Italic, bold, cyan text with a pink background")
