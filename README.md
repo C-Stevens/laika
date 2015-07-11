@@ -2,30 +2,30 @@
 Laika is an extensible bot written in Python for the IRC protocol. Laika is principled upon concurrency, threading, ease of use, and easy command writing.
 
 * [Quickstart](#quickstart)
-* [Configuration](laika#configuration)
-    * [Laika.cfg](laika#laikacfg)
-        * [Configuration values](laika#configuration-values)
-        * [Example configuration](laika#example-configuration)
-    * [Bot configurations](laika#bot-configurations)
-        * [Configuration values](laika#configuration-values-1)
-        * [Example configuration](laika#example-configuration-1)
-* [Command Line Arguments](laika#command-line-arguments)
-    * [Notable arguments](laika#some-notable-arguments)
-* [Writing Commands](laika#writing-commands)
-    * [Configuration values](laika#configuration-values-2)
-    * [Example configuration dict](laika#example-configuration-dict)
-    * [What commands have access to](laika#what-commands-have-access-to)
-    * [Potential behaviors](laika#potential-behaviors)
-        * [Thread pool maxed](laika#thread-pool-maxed)
-        * [User not authorized](laika#user-not-authorized)
-        * [CommandError: No arguments supplied](laika#commanderror-no-arguments-supplied)
-        * [CommandError: Arguments supplied when none requested](laika#commanderror-arguments-supplied-when-none-requested)
-        * [CommandError: Regex matching failed](laika#commanderror-regex-matching-failed)
-* [Help](laika#help)
-* [License](laika#license)
-* [Version](laika#version)
-* [Author](laika#author)
-* [TODO](laika#todo)
+* [Configuration](#configuration)
+    * [Laika.cfg](#laikacfg)
+        * [Configuration values](#configuration-values)
+        * [Example configuration](#example-configuration)
+    * [Bot configurations](#bot-configurations)
+        * [Configuration values](#configuration-values-1)
+        * [Example configuration](#example-configuration-1)
+* [Command Line Arguments](#command-line-arguments)
+    * [Notable arguments](#some-notable-arguments)
+* [Writing Commands](#writing-commands)
+    * [Configuration values](#configuration-values-2)
+    * [Example configuration dict](#example-configuration-dict)
+    * [What commands have access to](#what-commands-have-access-to)
+    * [Potential behaviors](#potential-behaviors)
+        * [Thread pool maxed](#thread-pool-maxed)
+        * [User not authorized](#user-not-authorized)
+        * [CommandError: No arguments supplied](#commanderror-no-arguments-supplied)
+        * [CommandError: Arguments supplied when none requested](#commanderror-arguments-supplied-when-none-requested)
+        * [CommandError: Regex matching failed](#commanderror-regex-matching-failed)
+* [Help](#help)
+* [License](#license)
+* [Version](#version)
+* [Author](#author)
+* [TODO](#todo)
 
 ##Quickstart
 Laika makes use of the [`pyyaml`](https://github.com/yaml/pyyaml) library as a git submodule. As such, git needs to be supplied the `recursive` flag to ensure proper configuration file loading.
@@ -46,7 +46,7 @@ Start laika:
 ```Bash
 $ python ./laika.py
 ```
-For arguments, reference the [command line arguments](laika#Command-Line-Arguments) section.
+For arguments, reference the [command line arguments](#Command-Line-Arguments) section.
 
 If python is raising syntax related errors on first-run, ensure your python version is at least version `3.4.3`.
 
@@ -58,7 +58,7 @@ Laika uses one configuration file for itself to set up how the program logs mess
 ####Laika.cfg
 This configuration file is used to specify how the program will log various messages. The values here do **not** affect how bot objects themselves will log messages.
 
-An alternate or explicit config file can be specified with the `--config` argument (For more information of command arguments, see the [argument section](laika#Command-Line-Arguments)), so long as it is parseable by [`pyyaml`](https://github.com/yaml/pyyaml). If an alternate configuration file is not supplied at run time, Laika will look for a `laika.cfg` file in the current directory ('.'). This means it will search for whatever the current shell directory is for a `laika.cfg` file, not necessarily the Laika project directory. 
+An alternate or explicit config file can be specified with the `--config` argument (For more information of command arguments, see the [argument section](#Command-Line-Arguments)), so long as it is parseable by [`pyyaml`](https://github.com/yaml/pyyaml). If an alternate configuration file is not supplied at run time, Laika will look for a `laika.cfg` file in the current directory ('.'). This means it will search for whatever the current shell directory is for a `laika.cfg` file, not necessarily the Laika project directory. 
 
 
 ######Configuration values:
@@ -118,7 +118,7 @@ For a bot to be loaded, the configuration file must be parseable by [`pyyaml`](h
 * `channels` : List of channels that the bot will attempt to join after successful connection. This uses yaml's list/array syntax, so each channel should be listed on an individual line, indented, and prefixed with a dash (-). Additional channels can be joined/left after initial launch with the core [join](commands/join.py) and [part](commands/part.py) commands.
 * `highLightChar` : Prefix character used for recognizing commands. It's safer to explicitly wrap this character in quotes to avoid yaml attempting to parse the character as yaml-specific code (for example, `'!'` as opposed to `!`). Highlight prefixes longer than one character are untested and may produce unpredictable results.
 * `authList` : A list of users who will be allowed to use commands that have the `auth` value in their config dict set to `True`. This, like `channels`, uses yaml's list/array syntax.
-* `botLog` : These values specify how the bot will handle logging it's own messages. These values share the documentation and syntax of the above values listed under [Laika.cfg](laika#laikacfg) configuration section. If you don't wish to bother with these, they can safely all be left blank or `nill` and they will use defaults.
+* `botLog` : These values specify how the bot will handle logging it's own messages. These values share the documentation and syntax of the above values listed under [Laika.cfg](#laikacfg) configuration section. If you don't wish to bother with these, they can safely all be left blank or `nill` and they will use defaults.
 * `ircLog` : This section specifies how the bot will handle logging for messages sent and recieved through the socket, as well as IRC channel messages.
     * `botLogName` : This value serves as the default logging folder. If `nill` or left blank, will default to value supplied for `nick`.
     * `logRoot` : Specifies an explicit path for all logging. `botLogName` is appended to this path to form the complete log root.
