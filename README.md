@@ -1,7 +1,7 @@
 #Laika
 Laika is an extensible bot written in Python for the IRC protocol. Laika is principled upon concurrency, threading, ease of use, and easy command writing.
 
-* [Quickstart](laika#quickstart)
+* [Quickstart](#quickstart)
 * [Configuration](laika#configuration)
     * [Laika.cfg](laika#laikacfg)
         * [Configuration values](laika#configuration-values)
