@@ -51,6 +51,8 @@ If an a key match cannot be made with the string given to *color* or *background
 ### Examples
 The following examples employ examples of more complicated nesting and usage for `format.py`'s functions. The output is more-or-less indicative of how the text will appear in user's IRC clients.
 
+Due to GitHub's strict HTML filtering, the below representations are provided in image form. Equivalent HTML representations are accompanied as alt-text and can be viewed in the raw markdown file.
+
 ```python
 src.format.bold(src.format.italic(src.format.underline("foo")))
 ```
@@ -63,25 +65,25 @@ src.format.underline(src.format.color(src.format.italic("foo"),'light-green'))
 ```
 Yeilds:
 
-<span style="text-decoration: underline; font-style: italic; color: light-green">foo</span>
+![<span style="text-decoration: underline; font-style: italic; color: light-green">foo</span>](img/underline-lightgreen_text-italic.png "Underlined, italic, and light-green text")
 
 ```python
 src.format.invert(src.format.color("foo", background='white')
 ```
 Yeilds:
 
-<span style="color: white; background-color: black">foo</span>
+![<span style="color: white; background-color: black">foo</span>](img/inverse-white_background.png "Inverse white background text")
 
 ```python
 src.format.italic(src.format.invert(src.format.color(src.format.bold("foo"),'cyan','pink')))
 ```
 Yeilds:
 
-<span style="color: white; background-color: black; font-style: italic; font-weight: bold">foo</span>
+![<span style="color: white; background-color: black; font-style: italic; font-weight: bold">foo</span>](img/italic-inverse-cyan_text-pink_background-bold.png "Italic, inverse, bold cyan text with a pink background")
 
 ```python
 src.format.italic(src.format.color(src.format.bold("foo"),'cyan','pink'))
 ```
 Yeilds:
 
-<span style="font-style: italic; font-weight: bold; color: cyan; background-color: pink">foo</span>
+![<span style="font-style: italic; font-weight: bold; color: cyan; background-color: pink">foo</span>](img/underline-lightgreen_text-italic.png "Italic, bold, cyan text with a pink background")
