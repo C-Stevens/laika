@@ -1,6 +1,7 @@
 #Laika
 Laika is an extensible bot written in Python for the IRC protocol. Laika is principled upon concurrency, threading, ease of use, and easy command writing.
 
+#####Table of Contents
 * [Quickstart](#quickstart)
 * [Configuration](#configuration)
     * [Laika.cfg](#laikacfg)
@@ -275,41 +276,41 @@ When a command attempts to run, several outcomes are possible. These outcomes us
 ######Thread Pool Maxed
 If a user attempts to issue a command while they currently have the maximum number of allowed command threads running at one time (By default: `5`), the command will be refused and the user will be issued the following IRC notice:
 
-"`Maximum number of pending commands (<thread pool size>) reached. Command <name of command attempted> has been ignored.`"
+> Maximum number of pending commands (`<thread pool size>`) reached. Command `<name of command attempted>` has been ignored.
 
 Additionally, the bot operator is made aware that a user has filled their thread pool and been denied running a command with the following message:
 
-"`User <thread pool owner> has filled their command queue and has been denied a command request`"
+> User `<thread pool owner>` has filled their command queue and has been denied a command request
 
 This log message is of level `warning`.
 
 ######User Not Authorized
 If a user attempts to issue a command that has the `auth` value in the command's `config` dict set to `True` and their nickname is not in the `authList` list, the command will be refused and the user will be issued the following IRC notice:
 
-"`You are not authorized to use the <name of command attempted> command`"
+> You are not authorized to use the `<name of command attempted>` command
 
 This message is not logged anywhere else.
 
 ######CommandError: No Arguments Supplied
 If the `args` key in a command's `config` dict is non-empty but no *non-optional* arguments were passed to the command, it will raise a `commandError` with the following detail string:
 
-"`Command requested arguments but received none.`"
+> Command requested arguments but received none.
 
 ######CommandError: Arguments Supplied When None Requested
 If the `args` key in a command's `config` dict is empty but the command was supplied with arguments, it will raise a `commandError` with the following detail string:
 
-"`Command requested no arguments but arguments were received.`"
+> Command requested no arguments but arguments were received.
 
 ######CommandError: Regex Matching Failed
 If the result of the regex match applied to the arguments results in `None` and the command expected at least one non-optional argument to match, it will raise a `commandError` with the following detail string:
 
-"`Command failed to match arguments.`"
+> Command failed to match arguments.
 
 In the case of all the above `commandError` behaviors, the command issuer will be sent an IRC notice with a message concerning "Invalid syntax", the `commandError` detail string, and a generated usage for the attempted command.
 
 In the event a command raises an exception other than `commandError`, its name and traceback will be logged, and the command issuer will be sent the following IRC notice:
 
-"`Command <name of attempted command> has critically failed. See logs for more information`"
+> Command `<name of attempted command>` has critically failed. See logs for more information
 
 In this event, the command thread is removed from the thread pool and the thread exits.
 
