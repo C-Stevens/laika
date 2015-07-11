@@ -56,14 +56,14 @@ src.format.bold(src.format.italic(src.format.underline("foo")))
 ```
 Yeilds:
 
-<span style="font-weight: bold; text-decoration: underline; font-style: italic">foo</span>
+![<span style="font-weight: bold; text-decoration: underline; font-style: italic">foo</span>](laika/doc/img/bold-italic-underline.png "Bold, italic, and underlined text")
 
 ```python
 src.format.underline(src.format.color(src.format.italic("foo"),'light-green'))
 ```
 Yeilds:
 
-<span style="text-decoration: underline; font-style: italic; color: lightgreen">foo</span>
+<span style="text-decoration: underline; font-style: italic; color: light-green">foo</span>
 
 ```python
 src.format.invert(src.format.color("foo", background='white')
