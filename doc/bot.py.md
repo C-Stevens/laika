@@ -1,7 +1,7 @@
 # `bot.py` Documentation
 
 ### Introduction
-This file holds the objects and methods involved with the creation and management of logs, both for Laika, loaded bots, as well as every loaded bot's server, socket, and channel logs.
+This file holds the bot object and methods that make up the core of each loaded bot. This object spawns all additional objects required, and will do the looping for parsing data from the socket.
 
 ### Objects
 #### bot objects
