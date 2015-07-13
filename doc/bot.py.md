@@ -14,7 +14,7 @@ Loads expected values from expected keys from *config* into local variables. *co
 
 
 * bot.**load_commands**(*self*)<br>
-Loads all files in `../laika/commands/` that end in `.py` as python modules. If there is an error while importing with `imp`, the exception will be caught and logged to the bot error log with level `logging.ERROR`. This method also will log a list of loaded modules to the debug log with level `logging.DEBUG`.
+Loads all files in `[...]/laika/commands/` that end in `.py` as python modules. If there is an error while importing with `imp`, the exception will be caught and logged to the bot error log with level `logging.ERROR`. This method also will log a list of loaded modules to the debug log with level `logging.DEBUG`.
 
 
 * bot.**parse**(*self*, *line*)<br>
