@@ -10,9 +10,9 @@ import src.log as log
 
 class bot:
 	def __init__(self, config, **kwargs):
+		self.ircLogger = log.ircLogManager()
 		self.loadConfig(config)
 		self.logger = log.logger(**self.botLogConfig)
-		self.ircLogger = log.ircLogManager(**self.ircLogConfig)
 		self.messageQueue = Queue()
 		self.socketWrapper = irc.socketConnection(self.logger, self.ircLogger, self.socket, self.messageQueue)
 		self.command_list = []
@@ -31,16 +31,16 @@ class bot:
 		self.serverPass 	= config['server']['pass']
 		self.nick 		= config['nick']
 		self.nickPass 		= config['nickPass']
-		self.mask 		= config['mask']
 		self.ident 		= config['ident']
 		self.userMode 		= str(config['userMode'])
 		self.channels 		= config['channels']
 		self.highlightChar 	= config['highlightChar']
 		self.authList 		= config['authList']
 		self.botLogConfig	= config['botLog']
-		self.ircLogConfig	= config['ircLog']
-		if not self.ircLogConfig['botLogName']:
-			self.ircLogConfig['botLogName'] = self.nick
+		for logGroup in config['ircLog']:
+			if not config['ircLog'][logGroup]['botLogName']:
+				config['ircLog'][logGroup]['botLogName'] = self.nick
+			self.ircLogger.register(log.ircLogGroup(**config['ircLog'][logGroup]))
 	def load_commands(self):
 		'''Import all commands found in ./commands.'''
 		command_paths = [os.path.abspath(os.path.join('./commands', i)) for i in os.listdir('./commands') if i.endswith('.py')]
@@ -62,7 +62,7 @@ class bot:
 				return
 			firstWord = firstWordSplit[1]
 
-			self.ircLogger.channelLog(line[2], line) # Log channel message
+			self.ircLogger.notifyChannelLogs(line[2], line) # Log channel message
 
 			if len(firstWord) != 1 and firstWord.startswith(self.highlightChar): # Check for command words
 				line_info = command.commandData()
@@ -91,7 +91,7 @@ class bot:
 					self.logger.error("Failed to parse message: %s", line)
 					self.logger.exception(e)
 			return
-		self.ircLogger.serverLog.info(' '.join(line)) # Log all non PRIVMSG server messages
+		self.ircLogger.notifyServerLogs(' '.join(line)) # Log all non PRIVMSG server messages
 		if line[0] == "PING": # Respond to a network PINGs
 			self.socketWrapper.pong(line[1])
 			return
@@ -100,14 +100,14 @@ class bot:
 				_nmMessage = ' '.join(str(i) for i in line[3:])[1:] # Reconstruct message
 				if _nmMessage.find("This nickname is registered.") != -1:
 					self.logger.info("Authing to NickServ")
-					self.socketWrapper.nsIdentify(self.nick, self.nickPass, self.mask)
+					self.socketWrapper.nsIdentify(self.nick, self.nickPass)
 			return
 	def run(self):
 		'''Main loop for reading data off the socket.'''
 		self.load_commands()
 		self.socketWrapper.connect(self.host, self.port, self.nick, self.ident, self.userMode, self.serverPass)
 		if self.nickPass is not None:
-			self.socketWrapper.nsIdentify(self.nick, self.nickPass, self.mask)
+			self.socketWrapper.nsIdentify(self.nick, self.nickPass)
 		self.socketWrapper.joinChannels(self.channels)
 		while self.socketWrapper.runState is True:
 			self.socketWrapper.buildMessageQueue()

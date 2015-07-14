@@ -44,17 +44,37 @@ At creation time, this object spawns a single logging steam of level `logging.NO
 Formats *msg* according to a keyword argument supplied to it at creation time (`messageFormat`), or defaults to "`<%(nick)s> %(msg)s`". The format here is supplied a dict, with *nick* and *msg* as keys. The final formatted message is logged to the `channelLogger` object under level `logging.INFO` by use of `logging.Logger`'s `info()` method.
 
 #### ircLogManager objects
-This object is created by a bot to spawn and manage logging to all channel logs, as well as logging data sent and received to and from the socket. At creation time, it will prepare logging directories and spawn necessary the socket-related logs. Logging to channels will create logging objects on an as-needed basis.
+This objest serves to manage all `log.ircLogGroup()` objects loaded for a particular bot, and to notify all logs when the bot wishes to log a message.
 
 *class* log.**ircLogManager**()
 
-* ircLogManager.**prepareDirs**(*self*)<br>
+* ircLogManager.**register**(*self*, *observer*)<br>
+Adds a logging object to the observer pool for notifications.
+
+
+* ircLogManager.**notifyChannelLogs**(*self*, *`*args`*, *`**kwargs`*)<br>
+Notifies all observers channel logging methods
+
+
+* ircLogManager.**notifySocketLogs**(*self*, *`*args`*, *`**kwargs`*)<br>
+Notifies all observers socket logs.
+
+
+* ircLogManager.**notifyServerLogs**(*self*, *`*args`*, *`**kwargs`*)<br>
+Notifies all observers server logs.
+
+#### ircLogGroup objects
+This object is created by a bot and registered to the `log.ircLogManager` to spawn and manage logging to all channel logs, as well as logging data sent and received to and from the socket. At creation time, it will prepare logging directories and spawn necessary the socket-related logs. Logging to channels will create logging objects on an as-needed basis.
+
+*class* log.**ircLogGroup**()
+
+* ircLogGroup.**prepareDirs**(*self*)<br>
 Ensures that all directories for logging are present before logs are created. If they are not present, it will attempt to create them with `os.makedirs()`
 
 
-* ircLogManager.**prepareLogs**(*self*)<br>
+* ircLogGroup.**prepareLogs**(*self*)<br>
 Spawns two `log.basicLogger` objects. One for logging messages sent out of the socket, and another for logging data received coming from the socket.
 
 
-* ircLogManager.**channelLog**(*self*, *channel*, *line*)<br>
+* ircLogGroup.**channelLog**(*self*, *channel*, *line*)<br>
 Will attempt to find an existing logging object in a dictionary of channel logs under the key supplied with *channel*. If a value for this key cannot be found, a log will be created and added to this key as it's value. It will then attempt to parse *line* by setting an internal variable `nick` to ` line[0][1:].split('!')[0]` and an internal variable `message` to `' '.join(line[3:])[1:]`. If this parsing raises any exceptions, they will be caught and the traceback printed to `sys.stderr`. Otherwise, it will log to the channel log object, passing `nick` and `message` as arguments.

@@ -16,15 +16,15 @@ class logger(logging.Logger):
 		defaultFormat = kwargs.get('defaultFormat') or "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
 		if kwargs.get('critLog') or True:
-			self.addStream(kwargs.get('critLogDir'), logging.CRITICAL, kwargs.get('critLogFormat') or defaultFormat)
+			self.addStream(kwargs.get('critLogPath'), logging.CRITICAL, kwargs.get('critLogFormat') or defaultFormat)
 		if kwargs.get('errLog') or True:
-			self.addStream(kwargs.get('errLogDir'), logging.ERROR, kwargs.get('errLogFormat') or defaultFormat)
+			self.addStream(kwargs.get('errLogPath'), logging.ERROR, kwargs.get('errLogFormat') or defaultFormat)
 		if kwargs.get('warnLog') or True:
-			self.addStream(kwargs.get('warnLogDir'), logging.WARNING, kwargs.get('warnLogFormat') or defaultFormat)
+			self.addStream(kwargs.get('warnLogPath'), logging.WARNING, kwargs.get('warnLogFormat') or defaultFormat)
 		if kwargs.get('infoLog') or False:
-			self.addStream(kwargs.get('infoLogDir'), logging.INFO, kwargs.get('infoLogFormat') or defaultFormat)
+			self.addStream(kwargs.get('infoLogPath'), logging.INFO, kwargs.get('infoLogFormat') or defaultFormat)
 		if kwargs.get('debugLog') or False:
-			self.addStream(kwargs.get('debugLogDir'), logging.DEBUG, kwargs.get('debugLogFormat') or defaultFormat)
+			self.addStream(kwargs.get('debugLogPath'), logging.DEBUG, kwargs.get('debugLogFormat') or defaultFormat)
 	def addStream(self, logDir, logLevel, logFormat):
 		'''Adds a log handler with the specified options to the logger.'''
 		if logDir is not None:
@@ -61,12 +61,33 @@ class channelLogger(logging.Logger):
 	def log(self, nick, msg):
 		'''Format message and log to self as only of level logging.INFO.'''
 		self.info(self.kwargs.get('messageFormat') or "<%(nick)s> %(msg)s", {'nick':nick, 'msg':msg})
-
+		
 class ircLogManager:
+	def __init__(self):
+		self.observers = []
+	def register(self, observer):
+		'''Adds a logging object to the observer pool for notifications.'''
+		self.observers.append(observer)
+	def notifyChannelLogs(self, *args, **kwargs):
+		'''Notifies all observers channel logging methods.'''
+		for logGroup in self.observers:
+			logGroup.channelLog(*args, **kwargs)
+	def notifySocketLogs(self, *args, **kwargs):
+		'''Notifies all observers socket logs.'''
+		for logGroup in self.observers:
+			logGroup.socketLog.log(*args, **kwargs)
+	def notifyServerLogs(self, *args, **kwargs):
+		'''Notifies all observers server logs.'''
+		for logGroup in self.observers:
+			logGroup.serverLog.log(*args, **kwargs)
+
+class ircLogGroup:
 	def __init__(self, **kwargs):
 		self.kwargs = kwargs
 		self._logRoot = os.path.abspath(kwargs.get('logRoot','./log'))
 		self.channelLogs = {}
+		self.socketLogs = {}
+		self.serverLogs = {}
 		self.prepareDirs()
 		self.prepareLogs()
 	def prepareDirs(self):
@@ -74,7 +95,7 @@ class ircLogManager:
 		self.serverLogPath = os.path.join(self._logRoot, self.kwargs.get('botLogName'))
 		if not os.path.exists(self.serverLogPath):
 			os.makedirs(self.serverLogPath)
-		self.channelLogPath = self.kwargs.get('channelLogPath') or os.path.join(self.serverLogPath, 'channel_log')
+		self.channelLogPath = self.kwargs.get('channelLogDir') or os.path.join(self.serverLogPath, 'channel_log')
 		if not os.path.exists(self.channelLogPath):
 			os.makedirs(self.channelLogPath)
 	def prepareLogs(self):
