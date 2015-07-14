@@ -123,17 +123,10 @@ class socketConnection:
 	def nick(self, nick):
 		'''Sets nickname to specified nick.'''
 		self.socketQueue.addToQueue("NICK "+nick+"\r\n")
-	def nsIdentify(self, nick, password, waitForMask=False):
+	def nsIdentify(self, nick, password=None):
 		'''Identifies the bot's nick with NickServ.'''
 		if password is not None:
 			self.socketQueue.addToQueue("NS IDENTIFY "+nick+" "+password+"\r\n")
-		if waitForMask == True: # Halts further socket interaction until the bot is given its mask
-			_backoffMax = 10 # Maximum wait time (in seconds)
-			_backoff = 1
-			while any("is now your hidden host (set by services.)" in i for i in self.readQueue()) is not True:
-				self.buildMessageQueue()
-				_backoff = min(_backoff * 1.05, _backoffMax)
-				time.sleep(_backoff)
 	def action(self, channel, action):
 		'''Issues a CTCP ACTION command to specified channel.'''
 		self.socketQueue.addToQueue("PRIVMSG "+channel+" :\u0001ACTION "+action+"\u0001\r\n")
@@ -162,5 +155,5 @@ class socketQueue:
 				continue
 			if self.parent.runState is True: # Additional runState check to avoid sending to a closed socket
 				self.socket.send((_queueItem).encode(self.encoding))
-				self.ircLog.socketLog.info(_queueItem.replace('\r\n','')) # Log socket send
+				self.ircLog.notifySocketLogs(_queueItem.replace('\r\n','')) # Log socket send
 		self.parent.socketShutdown()
