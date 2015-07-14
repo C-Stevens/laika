@@ -75,8 +75,8 @@ Issues a `TIME` command to the server the bot is connected to, or a specific ser
 Issues a `NICK` command to set the bot's nickname to the nickname supplied in *nick*.
 
 
-* socketConnection.**nsIdentify**(*self*, *nick*, *password*[, *waitForMask*])<br>
-Attempts to identify the bot's nickname with NickServ by issuing a `NS IDENTIFY` command with the supplied *nick* and *password*. if *waitForMask* is `True`, the method will loop and not return until it detects the string `"is now your hidden host (set by services.)"` in an IRC notice.
+* socketConnection.**nsIdentify**(*self*, *nick*[, *password*])<br>
+Attempts to identify the bot's nickname with NickServ by issuing a `NS IDENTIFY` command with the supplied *nick* and *password*.
 
 * socketConnection.**action**(*self*, *channel*, *action*)<br>
 Issues a `PRIVMSG` to the channel given in *channel* with the *action* string wrapped in `\u0001ACTION` and `\u0001` to form a CTCP ACTION command.
