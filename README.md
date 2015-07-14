@@ -47,7 +47,7 @@ Start laika:
 ```Bash
 $ python ./laika.py
 ```
-For arguments, reference the [command line arguments](#Command-Line-Arguments) section.
+For arguments, reference the [command line arguments](#command-line-arguments) section.
 
 If python is raising syntax related errors on first-run, ensure your python version is at least version `3.4.3`.
 
@@ -55,7 +55,7 @@ If python is raising syntax related errors on first-run, ensure your python vers
 ##Configuration
 Laika uses one configuration file for itself to set up how the program logs messages, and any number of bot configuration files for starting bot objects.
 
-**NOTE:** While filling config files, keep in mind that yaml will treat `None` as a string ('None'), and not as python's `NoneType`. To specify `None`, use either `nill`, or leave the value blank.
+**NOTE:** While filling config files, keep in mind that yaml will treat `None` as a string ('None'), and not as python's `NoneType`. To specify `None`, use either `null`, or leave the value blank.
 ####Laika.cfg
 This configuration file is used to specify how the program will log various messages. The values here do **not** affect how bot objects themselves will log messages.
 
@@ -65,20 +65,20 @@ An alternate or explicit config file can be specified with the `--config` argume
 ######Configuration values:
 * `defaultFormat`: This is the default logging format log levels will use if not explicitly provided with any of the below log format options. By default, this is `%(asctime)s - %(name)s - %(levelname)s - %(message)s`
 * `critLog`: Boolean option to enable or disable logging for critical messages. Defaults to `True`.
-* `critLogDir`: Specifies a directory to log critical messages to. If `nill` or left blank, it will default to send messages to the terminal.
-* `critLogFormat`: Specifies an explicit logging format for critical messages. For more information on logging formats, view the [log.py documentation]() (TODO: ADD LINK), and python's [logging documentation](https://docs.python.org/3.4/howto/logging-cookbook.html#use-of-alternative-formatting-styles).
+* `critLogDir`: Specifies a directory to log critical messages to. If `null` or left blank, it will default to send messages to the terminal.
+* `critLogFormat`: Specifies an explicit logging format for critical messages. For more information on logging formats, view the [log.py documentation](doc/log.py.md), and python's [logging documentation](https://docs.python.org/3.4/howto/logging-cookbook.html#use-of-alternative-formatting-styles).
 * `errLog`: Boolean option to enable or disable logging for error messages. Defaults to `True`.
-* `errLogDir`: Specifies a directory to log error messages to. If `nill` or left blank, it will default to send messages to the terminal.
-* `errLogFormat`: Specifies an explicit logging format for error messages. For more information on logging formats, view the [log.py documentation]() (TODO: ADD LINK), and python's [logging documentation](https://docs.python.org/3.4/howto/logging-cookbook.html#use-of-alternative-formatting-styles).
+* `errLogDir`: Specifies a directory to log error messages to. If `null` or left blank, it will default to send messages to the terminal.
+* `errLogFormat`: Specifies an explicit logging format for error messages. For more information on logging formats, view the [log.py documentation](doc/log.py.md), and python's [logging documentation](https://docs.python.org/3.4/howto/logging-cookbook.html#use-of-alternative-formatting-styles).
 * `warnLog`: Boolean option to enable or disable logging for warning messages. Defaults to `True`.
-* `warnLogDir`: Specifies a directory to log warning messages to. If `nill` or left blank, it will default to send messages to the terminal.
-* `warnLogFormat`: Specifies an explicit logging format for warning messages. For more information on logging formats, view the [log.py documentation]() (TODO: ADD LINK), and python's [logging documentation](https://docs.python.org/3.4/howto/logging-cookbook.html#use-of-alternative-formatting-styles).
+* `warnLogDir`: Specifies a directory to log warning messages to. If `null` or left blank, it will default to send messages to the terminal.
+* `warnLogFormat`: Specifies an explicit logging format for warning messages. For more information on logging formats, view the [log.py documentation](doc/log.py.md), and python's [logging documentation](https://docs.python.org/3.4/howto/logging-cookbook.html#use-of-alternative-formatting-styles).
 * `infoLog`: Boolean option to enable or disable logging for info messages. Defaults to `False`.
-* `infoLogDir`: Specifies a directory to log info messages to. If `nill` or left blank, it will default to send messages to the terminal.
-* `infoLogFormat`: Specifies an explicit logging format for info messages. For more information on logging formats, view the [log.py documentation]() (TODO: ADD LINK), and python's [logging documentation](https://docs.python.org/3.4/howto/logging-cookbook.html#use-of-alternative-formatting-styles).
+* `infoLogDir`: Specifies a directory to log info messages to. If `null` or left blank, it will default to send messages to the terminal.
+* `infoLogFormat`: Specifies an explicit logging format for info messages. For more information on logging formats, view the [log.py documentation](doc/log.py.md), and python's [logging documentation](https://docs.python.org/3.4/howto/logging-cookbook.html#use-of-alternative-formatting-styles).
 * `debugLog`: Boolean option to enable or disable logging for debug messages. Defaults to `False`.
-* `debugLogDir`: Specifies a directory to log debug messages to. If `nill` or left blank, it will default to send messages to the terminal.
-* `debugLogFormat`: Specifies an explicit logging format for debug messages. For more information on logging formats, view the [log.py documentation]() (TODO: ADD LINK), and python's [logging documentation](https://docs.python.org/3.4/howto/logging-cookbook.html#use-of-alternative-formatting-styles).
+* `debugLogDir`: Specifies a directory to log debug messages to. If `null` or left blank, it will default to send messages to the terminal.
+* `debugLogFormat`: Specifies an explicit logging format for debug messages. For more information on logging formats, view the [log.py documentation](doc/log.py.md), and python's [logging documentation](https://docs.python.org/3.4/howto/logging-cookbook.html#use-of-alternative-formatting-styles).
 
 ######Example configuration:
 ```yaml
@@ -112,22 +112,21 @@ For a bot to be loaded, the configuration file must be parseable by [`pyyaml`](h
     * `ssl` : Boolean to enable or disable wrapping the socket connection in an SSL layer for connecting to IRC servers over SSL. If set to something other than `True` or `False`, it will default to `False`. 
     * `pass` : If provided, the bot will pass this password value to the IRC server while connecting. **THIS PASSWORD IS NOT OBFUSCATED AND WILL REMAIN IN PLAINTEXT**. Additionally, if you are not connecting over an SSL connection to the IRC server, this password will also be sent to the server in plaintext.
 * `nick` : The nick/nickname the bot will use.
-* `nickPass` : If not `nill` or blank, this password will be sent to NickServ (NickServ!NickServ@services) for nickname authentification if the bot is sent an IRC notice about needing to authenticate.
-* `mask` : Boolean to enable or disable bot waiting for IRC mask. If `True`, the bot will withhold joining any channels until it's sent an IRC notice containing the string '`is now your hidden host (set by services.)`' so as not to leak the bot's hostname to any channels.
+* `nickPass` : If not `null` or blank, this password will be sent to NickServ (NickServ!NickServ@services) for nickname authentification if the bot is sent an IRC notice about needing to authenticate.
 * `ident` : The ident the bot will use. If unsure what to set this to, use the `nick` value here again.
 * `userMode` : Bot's user mode sent to the IRC server during initial connection. If unsure what to set this to, set it to `8`.
 * `channels` : List of channels that the bot will attempt to join after successful connection. This uses yaml's list/array syntax, so each channel should be listed on an individual line, indented, and prefixed with a dash (-). Additional channels can be joined/left after initial launch with the core [join](commands/join.py) and [part](commands/part.py) commands.
 * `highLightChar` : Prefix character used for recognizing commands. It's safer to explicitly wrap this character in quotes to avoid yaml attempting to parse the character as yaml-specific code (for example, `'!'` as opposed to `!`). Highlight prefixes longer than one character are untested and may produce unpredictable results.
 * `authList` : A list of users who will be allowed to use commands that have the `auth` value in their config dict set to `True`. This, like `channels`, uses yaml's list/array syntax.
-* `botLog` : These values specify how the bot will handle logging it's own messages. These values share the documentation and syntax of the above values listed under [Laika.cfg](#laikacfg) configuration section. If you don't wish to bother with these, they can safely all be left blank or `nill` and they will use defaults.
-* `ircLog` : This section specifies how the bot will handle logging for messages sent and recieved through the socket, as well as IRC channel messages.
-    * `botLogName` : This value serves as the default logging folder. If `nill` or left blank, will default to value supplied for `nick`.
+* `botLog` : These values specify how the bot will handle logging it's own messages. These values share the documentation and syntax of the above values listed under [Laika.cfg](#laikacfg) configuration section. If you don't wish to bother with these, they can safely all be left blank or `null` and they will use defaults.
+* `ircLog` : This section specifies how the bot will handle logging for messages sent and received through the socket, as well as IRC channel messages.
+    * `botLogName` : This value serves as the default logging folder. If `null` or left blank, will default to value supplied for `nick`.
     * `logRoot` : Specifies an explicit path for all logging. `botLogName` is appended to this path to form the complete log root.
-    * `serverLogFile` : Name of the log that records all messages received from the IRC server, with the path "`logRoot`/`botLogName`/`serverLogFile`". If `nill` or left blank, will default to `server_log.log`.
-    * `socketLogFile` : Name of the log that records all messages sent to the IRC server, with the path "`logRoot`/`botLogName`/`socketLogFile`". If `nill` or left blank, will default to `socket_log.log`.
-    * `channelLogPath` : Path to all channel logs. This path can be independent of the log root used for the above socket and server logs. if `nill` or left blank, will default to "`logRoot`/`botLogName`/channel_log/". If an absolute path is not supplied for this value, the path will be assumed to have root in the Laika project directory.
-    * `timeStampFormat` : How timestamps will appear in channel logs. This can either be a raw string and function as a prefix, or you can supply [`strftime` formats](https://docs.python.org/3.4/library/time.html#time.strftime). It's safer to wrap this value in quotes so yaml does not attempt to parse any characters (`%`, for example) as yaml-specific. If `nill` or left blank, will default to `[%Y-%m-%d %H:%M:%S]`.
-    * `messageFormat` : How messages will appear after the `timeStampFormat` prefix. values for nickname and message are passed to this string, if you so wish to use them. If `nill` or left blank, will default to `<%(nick)s> %(msg)s`. 
+    * `serverLogFile` : Name of the log that records all messages received from the IRC server, with the path "`logRoot`/`botLogName`/`serverLogFile`". If `null` or left blank, will default to `server_log.log`.
+    * `socketLogFile` : Name of the log that records all messages sent to the IRC server, with the path "`logRoot`/`botLogName`/`socketLogFile`". If `null` or left blank, will default to `socket_log.log`.
+    * `channelLogPath` : Path to all channel logs. This path can be independent of the log root used for the above socket and server logs. if `null` or left blank, will default to "`logRoot`/`botLogName`/channel_log/". If an absolute path is not supplied for this value, the path will be assumed to have root in the Laika project directory.
+    * `timeStampFormat` : How timestamps will appear in channel logs. This can either be a raw string and function as a prefix, or you can supply [`strftime` formats](https://docs.python.org/3.4/library/time.html#time.strftime). It's safer to wrap this value in quotes so yaml does not attempt to parse any characters (`%`, for example) as yaml-specific. If `null` or left blank, will default to `[%Y-%m-%d %H:%M:%S]`.
+    * `messageFormat` : How messages will appear after the `timeStampFormat` prefix. values for nickname and message are passed to this string, if you so wish to use them. If `null` or left blank, will default to `<%(nick)s> %(msg)s`. 
 
 ######Example configuration:
 ```yaml
@@ -137,8 +136,7 @@ server:
         ssl  : False
         pass : my_super_secret_password
 nick : Laika
-nickPass : nill
-mask : False
+nickPass : null
 ident : Laika
 userMode : 8
 channels:
@@ -151,28 +149,38 @@ authList:
 botLog:
         defaultFormat   : "%(asctime)s - Laika - %(levelname)s - %(message)s"
         critLog         : 
-        critLogDir      : 
+        critLogPath     : 
         critLogFormat   : 
         errLog          : 
-        errLogDir       : 
+        errLogPath      : 
         errLogFormat    : 
         warnLog         : 
-        warnLogDir      : 
+        warnLogPath     : 
         warnLogFormat   : 
         infoLog         : True
-        infoLogDir      : /home/laika/irc/infoLogs
+        infoLogPath     : /home/laika/irc/infoLogs
         infoLogFormat   : "%(message)s"
         debugLog        : 
-        debugLogDir     : 
+        debugLogPath    : 
         debugLogFormat  : 
 ircLog:
-        botLogName      : Laika
-        logRoot         : /var/log/irc/
-        serverLogFile   : serv-sock.log
-        socketLogFile   : serv-sock.log
-        channelLogPath  : /usr/share/Laika/chanlog
-        timeStampFormat : "At %H:%M:%S on %Y-%m-%d,"
-        messageFormat   : "%(nick)s said this: %(msg)s"
+        log0:
+                botLogName      : Laika
+                logRoot         : /var/log/irc/
+                serverLogFile   : serv-sock.log
+                socketLogFile   : serv-sock.log
+                channelLogDir   : /usr/share/Laika/chanlog
+                timeStampFormat : "At %H:%M:%S on %Y-%m-%d,"
+                messageFormat   : "%(nick)s said this: %(msg)s"
+        log1:
+                botLogName      : Laika
+                logRoot         : /home/laika
+                serverLogFile   : socket_log.txt
+                socketLogFile   : server_log.log
+                channelLogPath  : null
+                timeStampFormat : null
+                messageFormat   : null
+
 ```
 
 
@@ -193,7 +201,7 @@ Laika has a built in help command which can print complete usage information by 
 ##Writing Commands
 Laika was designed from the start to make writing commands quick and easy. All `.py` files located in `[...]/laika/commands` are loaded as commands at launch time, so adding or removing a command requires a restart of the bot.
 
-For more information about how the command objects behave and function, refer to command.py's documentation() TODO: ADD LINK.
+For more information about how the command objects behave and function, refer to command.py's [documentation()](doc/command.py.md).
 
 Commands require only two things, a `run()` function with the following signature:
 ```python
@@ -212,7 +220,7 @@ config = {
 ######Configuration values:
 * `name` : This is the user-friendly name of the command that appears on generated help usage for the command.
 * `command_str` : A string used to identify if the command is being called or not.
-* `args` : Custom type Arguments used to regex match various string types. More information about these arguments is mentioned later, and also in [argument.py's documentation](). TODO: ADD LINK
+* `args` : Custom type Arguments used to regex match various string types. More information about these arguments is mentioned later, and also in [argument.py's documentation](doc/argument.py.md).
 * `auth` : Boolean value to indicate whether or not the command issuer needs to be in the `authlist` list to run the command. The command will not run if this is set to `False`, and the user is not in the `authList` list.
 * `help` : General information about what the command does and/or how it functions. This is used in generated help usage for the command.
 
@@ -230,20 +238,20 @@ config = {
 
 Other than the above `run()` function and the `config` dict, command authors are given a large amount of freedom in their command writing. There is no timeout limit to commands, and you are free to write any number of classes, functions, and import any libraries you wish.
 
-For interacting with the socket and with the IRC server, it's recommended to become very familiar with the functions and methods found in [irc.py's documentation]() TODO: ADD LINK.
+For interacting with the socket and with the IRC server, it's recommended to become very familiar with the functions and methods found in [irc.py's documentation](doc/irc.py.md).
 
 #####What Commands Have Access to
 Commands themselves are not objects, but their `run()` function is called directly from a thread object. As such, the command file, through `run()` has access to a number of bot objects through its parent.
 
-* `self.socket` : Allows access to any of `irc.py`'s [functions]() TODO: ADD LINK.
+* `self.socket` : Allows access to any of `irc.py`'s [functions](doc/irc.py.md).
 * `self.command` : A module object for the command being issued (if accessed from inside a command, this is itself).
-* `self.commandData` : A `commandData()` TODO: ADD LINK object full of command-specific parsed data.
-* `self.parent` : A method of accessing the command thread's parent, the `commandManager()` TODO: ADD LINK object. Through this, values and methods under the `commandManager()` object can be accessed.
-* Any methods in the `commandThread()` object are accessible as well.
+* `self.commandData` : A [`commandData()`](doc/command.py.md) object full of command-specific parsed data.
+* `self.parent` : A method of accessing the command thread's parent, the [`commandManager()`](doc/command.py.md) object. Through this, values and methods under the `commandManager()` object can be accessed.
+* Any methods in the [`commandThread()`](doc/command.py.md) object are accessible as well.
 
 #####Arguments
 Laika comes with a sophisticated set of custom argument data types that use regex to validate and match data specified after the command when it's issued.
-These arguments are detailed in [argument.py's documentation]() TODO: ADD LINK, but below will serve as a general guide to using them.
+These arguments are detailed in [argument.py's documentation](doc/argument.py.md), but below will serve as a general guide to using them.
 
 If you wish to utilize Laika's argument matching, you must import the argument type library with:
 ```python
@@ -253,7 +261,7 @@ Having done this, you can now specify arguments in the `args` field of the confi
 This is done by supplying `Argument()` objects in an array for the value of `args` in the `config` dict.
 
 A quick explanation of `Argument()` object arguments:
-* `type` : Where you specify what kind of match you are expecting. For a list of all custom argument types, refer to `argument.py`'s [documentation]() (TODO: ADD LINK).
+* `type` : Where you specify what kind of match you are expecting. For a list of all custom argument types, refer to `argument.py`'s [documentation](doc/argument.py.md).
 * `optional` : Boolean value to indicate whether or not the argument is optional. If `True`, the command will fail to run if a valid match for this argument cannot be found.
 * `name` : If a valid match is found for this argument, the match will be supplied to the command under this dictionary key in `**kwargs`.
 
@@ -269,7 +277,7 @@ If you don't wish to use Laika's custom argument types, you can specify a single
 #####Potential Behaviors
 Each command is spawned on its own thread and will run concurrently alongside other command threads if more than one command is issued or running at the same time. There is no timeout for how long commands can exist, but each IRC user is given a thread pool max size of `5` by default. If your command fatally crashes and raises an exception, the thread and command will die, but be removed from the thread pool. However, if your command results in an infinite loop that will never exit, fatally or otherwise, the thread will remain in the user's thread pool until the bot is restarted. As of version 1.0, there is no way to set the thread pool limit to another value other than `5`, or flush running command threads without restarting the bot.
 
-More details on how commands are spawned and how the thread pool is managed can be found in `command.py`'s [documentation]() TODO: ADD LINK.
+More details on how commands are spawned and how the thread pool is managed can be found in `command.py`'s [documentation](doc/command.py.md).
 
 When a command attempts to run, several outcomes are possible. These outcomes usually have some kind of log message or built in notification with an IRC notice, but are listed below for the sake of documentation.
 
@@ -315,9 +323,9 @@ In the event a command raises an exception other than `commandError`, its name a
 In this event, the command thread is removed from the thread pool and the thread exits.
 
 ##Help
-For more information and documentation, you can view complete documentation for most of Laika's files in the [docs](docs) folder.
+For more information and documentation, you can view complete documentation for most of Laika's files in the [doc](doc) folder.
 
-For command specific help, Laika comes prepackaged with a [help command](commands/help.py) command, which can be used to generate help and usage information for commands. This functionality is only avaliable while interacting with the bot through IRC.
+For command specific help, Laika comes prepackaged with a [help command](commands/help.py), which can be used to generate help and usage information for commands. This functionality is only available while interacting with the bot through IRC.
 
 
 ##License
@@ -325,7 +333,7 @@ For licensing information, refer to the [LICENSE](LICENSE) file.
 
 
 ##Version
-Version information for the current release is avaliable in the [_version](_version.py) file.
+Version information for the current release is available in the [_version](_version.py) file.
 
 
 ##Author
@@ -338,6 +346,5 @@ I can be reached at [mail@colinjstevens.com](mailto:mail@colinjstevens.com)
 * Functionality for SocketHandler logging.
 * Variable length `highlightChar` prefix.
 * Make `readQueue()` function useful.
-* Saner "wait for mask" functionality.
 * Flush command to empty command thread pool.
 * Config value to set thread pool size.
