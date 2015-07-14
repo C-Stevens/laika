@@ -8,33 +8,34 @@ nickPass :
 mask : 
 ident : 
 userMode : 
-channels: 
+channels:
         - 
 highlightChar : 
-authList: 
+authList:
         - 
 botLog:
         defaultFormat   : 
         critLog         : 
-        critLogDir      : 
+        critLogPath     : 
         critLogFormat   : 
         errLog          : 
-        errLogDir       : 
+        errLogPath      : 
         errLogFormat    : 
         warnLog         : 
-        warnLogDir      : 
+        warnLogPath     : 
         warnLogFormat   : 
         infoLog         : 
-        infoLogDir      : 
+        infoLogPath     : 
         infoLogFormat   : 
         debugLog        : 
-        debugLogDir     : 
+        debugLogPath    : 
         debugLogFormat  : 
 ircLog:
-        botLogName      : 
-        logRoot         : 
-        serverLogFile   : 
-        socketLogFile   : 
-        channelLogPath  : 
-        timeStampFormat : 
-        messageFormat   : 
+        log0:
+                botLogName      : 
+                logRoot         : 
+                serverLogFile   : 
+                socketLogFile   : 
+                channelLogDir   : 
+                timeStampFormat : 
+                messageFormat   : 
