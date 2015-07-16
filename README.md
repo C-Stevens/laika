@@ -279,7 +279,7 @@ in the above `echo.py` configuration, a valid match for a channel name would be 
 If you don't wish to use Laika's custom argument types, you can specify a single argument of type `msg`. Everything after the command will match to this argument, and the entire string will be returned to the command. From there, you can parse this string however you wish.
 
 #####Potential Behaviors
-Each command is spawned on its own thread and will run concurrently alongside other command threads if more than one command is issued or running at the same time. There is no timeout for how long commands can exist, but each IRC user is given a thread pool max size of `5` by default, or can be configured with the `threadPoolSize` value in a bot's configuration file. If your command fatally crashes and raises an exception, the thread and command will die, but be removed from the thread pool. However, if your command results in an infinite loop that will never exit, fatally or otherwise, the thread will remain in the user's thread pool until the bot is restarted. As of version 1.0, to flush running command threads without restarting the bot.
+Each command is spawned on its own thread and will run concurrently alongside other command threads if more than one command is issued or running at the same time. There is no timeout for how long commands can exist, but each IRC user is given a thread pool max size of `5` by default, or can be configured with the `threadPoolSize` value in a bot's configuration file. If your command fatally crashes and raises an exception, the thread and command will die, but be removed from the thread pool. However, if your command results in an infinite loop that will never exit, fatally or otherwise, the thread will remain in the user's thread pool until the bot is restarted. As of version 1.1, the number of running commands can be queried with the [`runningcommands`](commands/runningcommands.py) command, and a user's thread pool can be cleared by users who are in the `authList` list with the [`flushcommands`](commads/flushcommands.py) command.
 
 More details on how commands are spawned and how the thread pool is managed can be found in `command.py`'s [documentation](doc/command.py.md).
 
@@ -350,5 +350,5 @@ I can be reached at [mail@colinjstevens.com](mailto:mail@colinjstevens.com)
 * ~~Functionality for SocketHandler logging.~~
 * Variable length `highlightChar` prefix.
 * Make `readQueue()` function useful.
-* Flush command to empty command thread pool.
+* ~~Flush command to empty command thread pool.~~
 * ~~Config value to set thread pool size.~~
