@@ -13,6 +13,7 @@ channels:
 highlightChar : 
 authList:
         - 
+threadPoolSize: 
 botLog:
         defaultFormat   : 
         critLog         : 

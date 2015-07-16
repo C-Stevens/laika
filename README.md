@@ -105,6 +105,8 @@ Laika will load a theoretically infinite number of valid configuration files fro
 
 For a bot to be loaded, the configuration file must be parseable by [`pyyaml`](https://github.com/yaml/pyyaml), be located in `[...]/laika/config/`, and end with a `.yaml` extension.
 
+Unlike Laika's program logging and the various levels of bot logging, bot objects are allowed to log in any number of locations at the same time. Logging details are supplied as sections under the `ircLog` section. Each section will configure a [`log.ircLogGroup()` object](doc/log.py.md) and be sent relevant logging data.
+
 ######Configuration values:
 * `server` : This section specifies how the bot will connect with the IRC server.
     * `host` : The URL or IP address to the IRC server.
@@ -118,8 +120,9 @@ For a bot to be loaded, the configuration file must be parseable by [`pyyaml`](h
 * `channels` : List of channels that the bot will attempt to join after successful connection. This uses yaml's list/array syntax, so each channel should be listed on an individual line, indented, and prefixed with a dash (-). Additional channels can be joined/left after initial launch with the core [join](commands/join.py) and [part](commands/part.py) commands.
 * `highLightChar` : Prefix character used for recognizing commands. It's safer to explicitly wrap this character in quotes to avoid yaml attempting to parse the character as yaml-specific code (for example, `'!'` as opposed to `!`). Highlight prefixes longer than one character are untested and may produce unpredictable results.
 * `authList` : A list of users who will be allowed to use commands that have the `auth` value in their config dict set to `True`. This, like `channels`, uses yaml's list/array syntax.
+* `threadPoolSize` : Defines the maximum number of running command threads a user can have at once. If `null` or left blank, this value will default to `5`.
 * `botLog` : These values specify how the bot will handle logging it's own messages. These values share the documentation and syntax of the above values listed under [Laika.cfg](#laikacfg) configuration section. If you don't wish to bother with these, they can safely all be left blank or `null` and they will use defaults.
-* `ircLog` : This section specifies how the bot will handle logging for messages sent and received through the socket, as well as IRC channel messages.
+* `ircLog` : This section holds log specifications for how the bot will handle logging for messages sent and received through the socket, as well as IRC channel messages.
     * `botLogName` : This value serves as the default logging folder. If `null` or left blank, will default to value supplied for `nick`.
     * `logRoot` : Specifies an explicit path for all logging. `botLogName` is appended to this path to form the complete log root.
     * `serverLogFile` : Name of the log that records all messages received from the IRC server, with the path "`logRoot`/`botLogName`/`serverLogFile`". If `null` or left blank, will default to `server_log.log`.
@@ -146,6 +149,7 @@ highlightChar : '!'
 authList:
         - GeorgeWashington
         - Abraham_Lincoln
+threadPoolSize: 12
 botLog:
         defaultFormat   : "%(asctime)s - Laika - %(levelname)s - %(message)s"
         critLog         : 
@@ -189,7 +193,7 @@ Laika can accept a small handful of command line arguments, and the complete set
 
 It should be noted that Laika requires loading a *full* config file, even if all values are replaced by command line arguments. This can either be the default `laika.cfg` file or a file specified with the `--config` argument.
 
-Laika has a built in help command which can print complete usage information by supppplying the `-h` or `--help` flags.
+Laika has a built in help flag which can print complete usage information by supppplying the `-h` or `--help` flags.
 
 ######Some notable arguments
 * `--version` : Prints program version information and exits.
@@ -247,7 +251,7 @@ Commands themselves are not objects, but their `run()` function is called direct
 * `self.command` : A module object for the command being issued (if accessed from inside a command, this is itself).
 * `self.commandData` : A [`commandData()`](doc/command.py.md) object full of command-specific parsed data.
 * `self.parent` : A method of accessing the command thread's parent, the [`commandManager()`](doc/command.py.md) object. Through this, values and methods under the `commandManager()` object can be accessed.
-* Any methods in the [`commandThread()`](doc/command.py.md) object are accessible as well.
+* Any methods in the [`commandThread`](doc/command.py.md) object are accessible as well.
 
 #####Arguments
 Laika comes with a sophisticated set of custom argument data types that use regex to validate and match data specified after the command when it's issued.
@@ -275,7 +279,7 @@ in the above `echo.py` configuration, a valid match for a channel name would be 
 If you don't wish to use Laika's custom argument types, you can specify a single argument of type `msg`. Everything after the command will match to this argument, and the entire string will be returned to the command. From there, you can parse this string however you wish.
 
 #####Potential Behaviors
-Each command is spawned on its own thread and will run concurrently alongside other command threads if more than one command is issued or running at the same time. There is no timeout for how long commands can exist, but each IRC user is given a thread pool max size of `5` by default. If your command fatally crashes and raises an exception, the thread and command will die, but be removed from the thread pool. However, if your command results in an infinite loop that will never exit, fatally or otherwise, the thread will remain in the user's thread pool until the bot is restarted. As of version 1.0, there is no way to set the thread pool limit to another value other than `5`, or flush running command threads without restarting the bot.
+Each command is spawned on its own thread and will run concurrently alongside other command threads if more than one command is issued or running at the same time. There is no timeout for how long commands can exist, but each IRC user is given a thread pool max size of `5` by default, or can be configured with the `threadPoolSize` value in a bot's configuration file. If your command fatally crashes and raises an exception, the thread and command will die, but be removed from the thread pool. However, if your command results in an infinite loop that will never exit, fatally or otherwise, the thread will remain in the user's thread pool until the bot is restarted. As of version 1.0, to flush running command threads without restarting the bot.
 
 More details on how commands are spawned and how the thread pool is managed can be found in `command.py`'s [documentation](doc/command.py.md).
 
@@ -343,8 +347,8 @@ I can be reached at [mail@colinjstevens.com](mailto:mail@colinjstevens.com)
 
 
 ##TODO
-* Functionality for SocketHandler logging.
+* ~~Functionality for SocketHandler logging.~~
 * Variable length `highlightChar` prefix.
 * Make `readQueue()` function useful.
 * Flush command to empty command thread pool.
-* Config value to set thread pool size.
+* ~~Config value to set thread pool size.~~

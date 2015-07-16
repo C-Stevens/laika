@@ -12,11 +12,11 @@ class commandError(Exception):
 		return repr(self.msg)
 
 class commandManager:
-	def __init__(self, log, commandList, authList):
+	def __init__(self, log, commandList, authList, threadPoolSize):
 		self.log = log
 		self.commandList = commandList
 		self.authList = authList
-		self.maxUserThreads = 5 # Default user thread pool size
+		self.maxUserThreads = threadPoolSize if threadPoolSize else 5
 		self.threadPools = {}
 	def spawnThread(self, commandData, socket):
 		'''Spawns a command thread if user is authorized and has room in their thread pool.'''

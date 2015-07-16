@@ -16,7 +16,7 @@ class bot:
 		self.messageQueue = Queue()
 		self.socketWrapper = irc.socketConnection(self.logger, self.ircLogger, self.socket, self.messageQueue)
 		self.command_list = []
-		self.commandWrapper = command.commandManager(self.logger, self.command_list, self.authList)
+		self.commandWrapper = command.commandManager(self.logger, self.command_list, self.authList, self.threadPoolSize)
 	def loadConfig(self, config):
 		'''Loads all needed config items into object.'''
 		if config['server']['ssl'] is True:
@@ -36,6 +36,7 @@ class bot:
 		self.channels 		= config['channels']
 		self.highlightChar 	= config['highlightChar']
 		self.authList 		= config['authList']
+		self.threadPoolSize	= config['threadPoolSize']
 		self.botLogConfig	= config['botLog']
 		for logGroup in config['ircLog']:
 			if not config['ircLog'][logGroup]['botLogName']:
