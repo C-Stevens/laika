@@ -10,4 +10,5 @@ Version 1.1
 	* Fixed configuration values from "Dir" to "Path" or vise versa to improve clarity.
 	* Made command thread pool size user-configurable.
 	* Added runningcommands and flushcommands commands.
+	* Change highlightChar to highlightPrefix and created functionality for entire strings to prefix commands,
 '''
