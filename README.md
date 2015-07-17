@@ -24,7 +24,7 @@ Laika is an extensible bot written in Python for the IRC protocol. Laika is prin
         * [CommandError: Regex matching failed](#commanderror-regex-matching-failed)
 * [Help](#help)
 * [License](#license)
-* [Version](#version-and-changelog)
+* [Version and Changelog](#version-and-changelog)
 * [Author](#author)
 * [TODO](#todo)
 
@@ -118,7 +118,7 @@ Unlike Laika's program logging and the various levels of bot logging, bot object
 * `ident` : The ident the bot will use. If unsure what to set this to, use the `nick` value here again.
 * `userMode` : Bot's user mode sent to the IRC server during initial connection. If unsure what to set this to, set it to `8`.
 * `channels` : List of channels that the bot will attempt to join after successful connection. This uses yaml's list/array syntax, so each channel should be listed on an individual line, indented, and prefixed with a dash (-). Additional channels can be joined/left after initial launch with the core [join](commands/join.py) and [part](commands/part.py) commands.
-* `highLightPrefix` : Prefix used for recognizing commands. It's safer to explicitly wrap this character in quotes to avoid yaml attempting to parse the character as yaml-specific code (for example, `'!'` as opposed to `!`).
+* `highLightPrefix` : Prefix used for recognizing commands. It's safer to explicitly wrap this value in quotes to avoid yaml attempting to parse certain characters as yaml-specific code (for example, `'!'` as opposed to `!`).
 * `authList` : A list of users who will be allowed to use commands that have the `auth` value in their config dict set to `True`. This, like `channels`, uses yaml's list/array syntax.
 * `threadPoolSize` : Defines the maximum number of running command threads a user can have at once. If `null` or left blank, this value will default to `5`.
 * `botLog` : These values specify how the bot will handle logging it's own messages. These values share the documentation and syntax of the above values listed under [Laika.cfg](#laikacfg) configuration section. If you don't wish to bother with these, they can safely all be left blank or `null` and they will use defaults.
@@ -351,3 +351,4 @@ I can be reached at [mail@colinjstevens.com](mailto:mail@colinjstevens.com)
 * Make `readQueue()` function useful.
 * ~~Flush command to empty command thread pool.~~
 * ~~Config value to set thread pool size.~~
+* Add module functionality
