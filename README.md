@@ -12,6 +12,7 @@ Laika is an extensible bot written in Python for the IRC protocol. Laika is prin
         * [Example configuration](#example-configuration-1)
 * [Command Line Arguments](#command-line-arguments)
     * [Notable arguments](#some-notable-arguments)
+* [Modules](#modules)
 * [Writing Commands](#writing-commands)
     * [Configuration values](#configuration-values-2)
     * [Example configuration dict](#example-configuration-dict)
@@ -201,6 +202,17 @@ Laika has a built in help flag which can print complete usage information by sup
 * `--config` : A full path to an alternate program config file. This will act as the loaded configuration file in lieu of the default `laika.cfg`. The same precedence and replacement rules of supplied command line config values still apply to configuration files supplied with this argument.
 * `--critLog`, `--errLog`, `--warnLog`, `--infoLog`, `--debugLog` : These are boolean flags that must be explicitly be set to a case insensitive `'True'`, `'t'`, `'yes'`, or `1` for `True` and likewise `'False'`,`'f'`,`'no'`, or `0` for `False`. If something other than these values is supplied, these flags will be silently ignored.
 
+##Modules
+Laika cannot cleanly implement every feature a bot operator might want. In order to keep the source code for Laika sane but also allow even more freedom for bot operators to implement their own features and functionality, Laika comes with a modules feature. Modules are `.py` files loaded from inside `./modules` that are spawned on their own individual threads, and provided with the following objects as arguments:
+* The bot's IRC logging manager, a `log.ircLogManager` object.
+* The bot's logging object, a `log.logger` object.
+* The bot's `irc.socketConnection` object.
+* The bot's command manager, a `command.commandManager` object.
+
+The only stipulation expected from module files is that they have a `run()` function that is able to receive these above arguments, which most likely will look like this:
+```python
+def run(*args):
+```
 
 ##Writing Commands
 Laika was designed from the start to make writing commands quick and easy. All `.py` files located in `[...]/laika/commands` are loaded as commands at launch time, so adding or removing a command requires a restart of the bot.
@@ -351,5 +363,5 @@ I can be reached at [mail@colinjstevens.com](mailto:mail@colinjstevens.com)
 * Make `readQueue()` function useful.
 * ~~Flush command to empty command thread pool.~~
 * ~~Config value to set thread pool size.~~
-* Add module functionality.
+* ~~Add module functionality.~~
 * Make NickServ ident configurable to allow use on non-freenode servers.

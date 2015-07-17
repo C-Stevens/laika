@@ -2,6 +2,7 @@ import ssl
 import os
 import imp
 import socket
+import threading
 from queue import Queue
 import src.irc as irc
 import src.format as format
@@ -16,7 +17,9 @@ class bot:
 		self.messageQueue = Queue()
 		self.socketWrapper = irc.socketConnection(self.logger, self.ircLogger, self.socket, self.messageQueue)
 		self.command_list = []
+		self.module_list = []
 		self.commandWrapper = command.commandManager(self.logger, self.command_list, self.authList, self.threadPoolSize)
+		self.load_modules()
 	def loadConfig(self, config):
 		'''Loads all needed config items into object.'''
 		if config['server']['ssl'] is True:
@@ -43,15 +46,28 @@ class bot:
 				config['ircLog'][logGroup]['botLogName'] = self.nick
 			self.ircLogger.register(log.ircLogGroup(**config['ircLog'][logGroup]))
 	def load_commands(self):
-		'''Import all commands found in ./commands.'''
+		'''Imports all files found in ./commands as commands.'''
 		command_paths = [os.path.abspath(os.path.join('./commands', i)) for i in os.listdir('./commands') if i.endswith('.py')]
 		for i in command_paths:
 			try:
 				self.command_list.append(imp.load_source(os.path.splitext(os.path.basename(i))[0], i))
 			except Exception as e:
-				self.logger.error("Failed to import module: %s", i)
+				self.logger.error("Failed to import command: %s", i)
 				self.logger.exception(e)
 		self.logger.debug("Loaded Commands: %s", self.command_list)
+	def load_modules(self):
+		'''Imports all files found in ./modules as modules.'''
+		module_paths = [os.path.abspath(os.path.join('./modules', i)) for i in os.listdir('./modules') if i.endswith('.py')]
+		for i in module_paths:
+			try:
+				self.module_list.append(imp.load_source(os.path.splitext(os.path.basename(i))[0], i))
+			except Exception as e:
+				self.logger.error("Failed to import module: %s", i)
+				self.logger.exception(e)
+		self.logger.debug("Loaded Modules: %s", self.command_list)
+		for module in self.module_list:
+			t = threading.Thread(target=module.run, name="module_"+module.__name__, args=(self.ircLogger, self.logger, self.socketWrapper, self.commandWrapper))
+			t.start()
 	def parse(self, line):
 		'''Deal with lines coming off the socket.'''
 		split_line = line.split(' ')
@@ -117,3 +133,4 @@ class bot:
 					except:
 						pass
 					self.parse(line)
+		self.logger.info("Bot exiting")
