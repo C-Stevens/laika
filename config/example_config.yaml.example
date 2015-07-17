@@ -5,6 +5,8 @@ server:
         pass : 
 nick : 
 nickPass : 
+nickServiceIdent : 
+nickAuthMsg : 
 mask : 
 ident : 
 userMode : 

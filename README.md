@@ -116,6 +116,8 @@ Unlike Laika's program logging and the various levels of bot logging, bot object
     * `pass` : If provided, the bot will pass this password value to the IRC server while connecting. **THIS PASSWORD IS NOT OBFUSCATED AND WILL REMAIN IN PLAINTEXT**. Additionally, if you are not connecting over an SSL connection to the IRC server, this password will also be sent to the server in plaintext.
 * `nick` : The nick/nickname the bot will use.
 * `nickPass` : If not `null` or blank, this password will be sent to NickServ (NickServ!NickServ@services) for nickname authentification if the bot is sent an IRC notice about needing to authenticate.
+* `nickServiceIdent` : This is the ident of the IRC network's nickname service manager and is used to determine if the bot is being queried for nickname-specific information. If `null` or left blank, this will default to freenode's NickServ ident of "`NickServ!NickServ@services`".
+* `nickAuthMsg` : This is the string that will be sent by the `nickServiceIdent` service user to notify the bot that they need to authenticate their nickname. If `null` or left blank, the bot will attempt to authenticate with the `nickServiceIdent` service user every time they are sent a notice by it. For freenode servers, this should be set to "`This nickname is registered.`".
 * `ident` : The ident the bot will use. If unsure what to set this to, use the `nick` value here again.
 * `userMode` : Bot's user mode sent to the IRC server during initial connection. If unsure what to set this to, set it to `8`.
 * `channels` : List of channels that the bot will attempt to join after successful connection. This uses yaml's list/array syntax, so each channel should be listed on an individual line, indented, and prefixed with a dash (-). Additional channels can be joined/left after initial launch with the core [join](commands/join.py) and [part](commands/part.py) commands.
@@ -141,6 +143,8 @@ server:
         pass : my_super_secret_password
 nick : Laika
 nickPass : null
+nickServiceIdent : 
+nickAuthMsg : "This nickname is registered."
 ident : Laika
 userMode : 8
 channels:
@@ -364,4 +368,4 @@ I can be reached at [mail@colinjstevens.com](mailto:mail@colinjstevens.com)
 * ~~Flush command to empty command thread pool.~~
 * ~~Config value to set thread pool size.~~
 * ~~Add module functionality.~~
-* Make NickServ ident configurable to allow use on non-freenode servers.
+* ~~Make NickServ ident configurable to allow use on non-freenode servers.~~

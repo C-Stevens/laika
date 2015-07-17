@@ -27,13 +27,17 @@ class bot:
 		elif config['server']['ssl'] is False:
 			self.socket = socket.socket()
 		else:
-			self.logger.warning("Unable to determine ssl preferences, defaulting to no ssl")
+			self.logger.warning("Unable to determine SSL preferences, defaulting to no SSL")
 			self.socket = socket.socket()
 		self.host 		= config['server']['host']
 		self.port 		= config['server']['port']
 		self.serverPass 	= config['server']['pass']
 		self.nick 		= config['nick']
 		self.nickPass 		= config['nickPass']
+		self.nickServiceIdent	= config['nickServiceIdent']
+		if not self.nickServiceIdent:
+			self.nickServiceIdent = "NickServ!NickServ@services"
+		self.nickAuthMsg	= config['nickAuthMsg']
 		self.ident 		= config['ident']
 		self.userMode 		= str(config['userMode'])
 		self.channels 		= config['channels']
@@ -102,7 +106,7 @@ class bot:
 
 					self.commandWrapper.spawnThread(line_info, self.socketWrapper)
 				except Exception as e:
-					self.logger.error("Failed to parse message: %s", line)
+					self.logger.error("Failed to parse message: %s"%(repr(line)))
 					self.logger.exception(e)
 			return
 		self.ircLogger.notifyServerLogs(line) # Log all non PRIVMSG server messages
@@ -110,9 +114,9 @@ class bot:
 			self.socketWrapper.pong(split_line[1])
 			return
 		if split_line[1] == "NOTICE":
-			if split_line[0][1:].find("NickServ!NickServ@services") != -1: # NickServ notice
+			if split_line[0][1:].find(self.nickServiceIdent) != -1: # NickServ notice
 				_nmMessage = ' '.join(str(i) for i in split_line[3:])[1:] # Reconstruct message
-				if _nmMessage.find("This nickname is registered.") != -1:
+				if _nmMessage.find(self.nickAuthMsg) != -1 or self.nickAuthMsg is None:
 					self.logger.info("Authing to NickServ")
 					self.socketWrapper.nsIdentify(self.nick, self.nickPass)
 			return
