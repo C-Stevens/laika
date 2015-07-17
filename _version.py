@@ -1,4 +1,4 @@
-__version__ = "Laika 1.0"
+__version__ = "Laika 1.1"
 '''
 Changelog
 ---------
