@@ -357,7 +357,7 @@ Version information for the current release, and a changelog is available in the
 
 
 ##Author
-Laika was written by Colin Stevens.
+Laika was written by [Colin Stevens](https://colinjstevens.com).
 
 I can be reached at [mail@colinjstevens.com](mailto:mail@colinjstevens.com)
 
