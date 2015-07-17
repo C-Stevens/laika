@@ -17,6 +17,7 @@ def run(self, **kwargs):
 		if command == i.config['command_str']:
 			self.socket.notice(self.commandData.nick, _helpPrefix+i.config['name'])
 			self.socket.notice(self.commandData.nick, _helpPrefix+i.config['help'])
+			self.socket.notice(self.commandData.nick, _helpPrefix+"This command %s require being in the authList."%(src.format.italic("does" if i.config['auth'] is True else "doesn't")))
 			self.socket.notice(self.commandData.nick, _helpPrefix+self.createUsage(i))
 			return
 	self.socket.notice(self.commandData.nick, _helpPrefix+"Help information for "+src.format.bold(command)+" not found")
