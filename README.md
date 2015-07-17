@@ -351,4 +351,5 @@ I can be reached at [mail@colinjstevens.com](mailto:mail@colinjstevens.com)
 * Make `readQueue()` function useful.
 * ~~Flush command to empty command thread pool.~~
 * ~~Config value to set thread pool size.~~
-* Add module functionality
+* Add module functionality.
+* Make NickServ ident configurable to allow use on non-freenode servers.
