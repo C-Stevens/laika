@@ -34,7 +34,7 @@ class bot:
 		self.ident 		= config['ident']
 		self.userMode 		= str(config['userMode'])
 		self.channels 		= config['channels']
-		self.highlightChar 	= config['highlightChar']
+		self.highlightPrefix 	= config['highlightPrefix']
 		self.authList 		= config['authList']
 		self.threadPoolSize	= config['threadPoolSize']
 		self.botLogConfig	= config['botLog']
@@ -54,21 +54,18 @@ class bot:
 		self.logger.debug("Loaded Commands: %s", self.command_list)
 	def parse(self, line):
 		'''Deal with lines coming off the socket.'''
-		line = line.split(' ')
-		if line[1] == "PRIVMSG":
-			if len(line) < 4: # Malformed line. Pass to avoid going out of bounds
+		split_line = line.split(' ')
+		if split_line[1] == "PRIVMSG":
+			if len(split_line) < 4: # Malformed line. Pass to avoid going out of bounds
 				return
-			firstWordSplit = line[3].split(':',1)
-			if len(firstWordSplit) < 2: # Line split improperly on ':', discard
-				return
-			firstWord = firstWordSplit[1]
+			line_message = ' '.join(split_line[3:])[1:]
 
-			self.ircLogger.notifyChannelLogs(line[2], line) # Log channel message
+			self.ircLogger.notifyChannelLogs(split_line[2], split_line) # Log channel message
 
-			if len(firstWord) != 1 and firstWord.startswith(self.highlightChar): # Check for command words
+			if line_message[:len(self.highlightPrefix)] == self.highlightPrefix: # Check for command words
 				line_info = command.commandData()
 				
-				if line[0].find('!~') != -1:
+				if split_line[0].find('!~') != -1:
 					line_info.identd = False
 					splitOn = '!~'
 				else:
@@ -76,29 +73,29 @@ class bot:
 					splitOn = '!'
 				try:
 					line_info.botnick = self.nick
-					line_info.nick = line[0].split(splitOn)[0][1:]
-					line_info.user = line[0].split(splitOn)[1].split('@')[0]
-					line_info.hostname = line[0].split(splitOn)[1].split('@')[1]
-					line_info.msgType = line[1]
-					line_info.channel = line[2]
+					line_info.nick = split_line[0].split(splitOn)[0][1:]
+					line_info.user = split_line[0].split(splitOn)[1].split('@')[0]
+					line_info.hostname = split_line[0].split(splitOn)[1].split('@')[1]
+					line_info.msgType = split_line[1]
+					line_info.channel = split_line[2]
 					if line_info.channel == self.nick: # Direct PM responses to the user who sent the PM
 						line_info.channel = line_info.nick
-					line_info.command = firstWord[1:]
-					line_info.highlightChar = self.highlightChar
-					line_info.args = ' '.join(line[4:])
+					line_info.command = line_message[len(self.highlightPrefix):].split(' ')[0]
+					line_info.highlightPrefix = self.highlightPrefix
+					line_info.args = ' '.join(line_message[len(self.highlightPrefix):].split(' ')[1:])
 
 					self.commandWrapper.spawnThread(line_info, self.socketWrapper)
 				except Exception as e:
 					self.logger.error("Failed to parse message: %s", line)
 					self.logger.exception(e)
 			return
-		self.ircLogger.notifyServerLogs(' '.join(line)) # Log all non PRIVMSG server messages
-		if line[0] == "PING": # Respond to a network PINGs
-			self.socketWrapper.pong(line[1])
+		self.ircLogger.notifyServerLogs(line) # Log all non PRIVMSG server messages
+		if split_line[0] == "PING": # Respond to a network PINGs
+			self.socketWrapper.pong(split_line[1])
 			return
-		if line[1] == "NOTICE":
-			if line[0][1:].find("NickServ!NickServ@services") != -1: # NickServ notice
-				_nmMessage = ' '.join(str(i) for i in line[3:])[1:] # Reconstruct message
+		if split_line[1] == "NOTICE":
+			if split_line[0][1:].find("NickServ!NickServ@services") != -1: # NickServ notice
+				_nmMessage = ' '.join(str(i) for i in split_line[3:])[1:] # Reconstruct message
 				if _nmMessage.find("This nickname is registered.") != -1:
 					self.logger.info("Authing to NickServ")
 					self.socketWrapper.nsIdentify(self.nick, self.nickPass)

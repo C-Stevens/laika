@@ -10,7 +10,7 @@ ident :
 userMode : 
 channels:
         - 
-highlightChar : 
+highlightPrefix : 
 authList:
         - 
 threadPoolSize: 
