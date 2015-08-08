@@ -1,4 +1,5 @@
 import logging
+import logging.handlers
 import os
 import sys
 import traceback
@@ -50,6 +51,15 @@ class basicLogger(logging.Logger):
 		'''Log all messages to self only as of level logging.INFO.'''
 		self.info(msg)
 
+class basicSocketLogger(logging.Logger):
+	def __init__(self):
+		logging.Logger.__init__(self, self)
+		self.setLevel(logging.NOTSET)
+		socketHandler = logging.handlers.SocketHandler('localhost', logging.handlers.DEFAULT_TCP_LOGGING_PORT)
+		self.addHandler(socketHandler)
+	def log(self, msg):
+		self.info(str(msg))
+
 class channelLogger(logging.Logger):
 	def __init__(self, logPath, **kwargs):
 		logging.Logger.__init__(self, self)
@@ -60,7 +70,7 @@ class channelLogger(logging.Logger):
 		self.addHandler(fh)
 	def log(self, nick, msg):
 		'''Format message and log to self as only of level logging.INFO.'''
-		self.info(self.kwargs.get('messageFormat') or "<%(nick)s> %(msg)s", {'nick':nick, 'msg':msg})
+		self.info(self.kwargs.get('messageFormat') or u'<%(nick)s> %(msg)s', {'nick':nick, 'msg':msg})
 		
 class ircLogManager:
 	def __init__(self):
