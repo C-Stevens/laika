@@ -1,4 +1,4 @@
-__version__ = "Laika 1.1"
+__version__ = "Laika v1.2"
 '''
 Changelog
 ---------
@@ -11,4 +11,9 @@ Version 1.1
 	* Made command thread pool size user-configurable.
 	* Added runningcommands and flushcommands commands.
 	* Change highlightChar to highlightPrefix and created functionality for entire strings to prefix commands.
+Version 1.2
+	* Added indication of command auth requirements in help command.
+	* Added module functionality.
+	* Made NickServ service user information configurable to allow use on non-freenode servers.
+	* Forced utf-8 unicode encoding in channel logs to avoid ASCII failing to decode IRC control codes.
 '''
