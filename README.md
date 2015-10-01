@@ -33,7 +33,7 @@ Laika is an extensible bot written in Python for the IRC protocol. Laika is prin
 Laika makes use of the [`pyyaml`](https://github.com/yaml/pyyaml) library as a git submodule. As such, git needs to be supplied the `recursive` flag to ensure proper configuration file loading.
 To get started, first clone the repository:
 ```Bash
-$ git clone --recursive git@github.com:C-Stevens/laika.git && cd laika/
+$ git clone --recursive https://github.com/C-Stevens/laika.git && cd laika/
 ```
 Copy configuration templates:
 ```Bash
