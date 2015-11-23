@@ -154,6 +154,9 @@ class socketQueue:
 			except queue.Empty:
 				continue
 			if self.parent.runState is True: # Additional runState check to avoid sending to a closed socket
-				self.socket.send((_queueItem).encode(self.encoding))
-				self.ircLog.notifySocketLogs(_queueItem.replace('\r\n','')) # Log socket send
+				try:
+					self.socket.send((_queueItem).encode(self.encoding))
+					self.ircLog.notifySocketLogs(_queueItem.replace('\r\n','')) # Log socket send
+				except BrokenPipeError:
+					self.parent.runState = False
 		self.parent.socketShutdown()
