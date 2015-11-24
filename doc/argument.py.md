@@ -30,14 +30,14 @@ Returns the regex match for the object's type.
 
 
 #### Argument objects
-This object is what is created by the commands themselves and how the command author interacts with the regex matching methods in `command.py`. 
+This object is what is created by the commands themselves and how the command author interacts with the regex matching methods in `command.py`.
 
 This object takes three arguments: *type* (an `argument.Type` enum), *optional* (a boolean), and *name* (a string).
 
 *class* argument.**Argument**()
 
 * Argument.**baseRegex**(*self*)<br>
-Returns the base regex match for this argument only by forming a regex matching group with *name* as the match group's name. The regex for itself is obtained by querying *type* for the `type.validRegex()` method. 
+Returns the base regex match for this argument only by forming a regex matching group with *name* as the match group's name. The regex for itself is obtained by querying *type* for the `type.validRegex()` method.
 
 
 * Argument.**describe**(*self*)<br>
@@ -46,7 +46,7 @@ Returns simple formatting around an explicit string representation of *type*, su
 ##### Using Argument objects
 `argument.Argument()` objects are used by commands to specify a regex match under a certain match group name. For example, `commands/echo.py`'s argument list is: `[Argument(type=Type.channel, optional=True, name="channel"), Argument(type=Type.msg, optional=False, name="msg")]`.
 
-In this example, the first Argument will return a regex match to `command.py` of "`(?P<channel>)[#|&]+[^, ]{1,200}`"
+In this example, the first Argument will return a regex match to `command.py` of "`(?P<channel>[#|&]+[^, ]{1,200})`".
 
 The second Argument will return a regex match to `command.py` of "`(?P<msg>.*)`"
 
