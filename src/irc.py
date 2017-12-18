@@ -143,9 +143,9 @@ class socketQueue:
 		self.encoding = 'utf-8'
 		self.t = threading.Thread(target=self.flushQueue, name="socket_queueWorker")
 		self.t.start()
-	def addToQueue(self, message):
+	def addToQueue(self, message, reportToQueue=True):
 		'''Adds a given string to the socket queue.'''
-		self.socketQueue.put(message)
+		self.socketQueue.put((message,reportToQueue))
 	def flushQueue(self):
 		'''Sends out all messages in the queue to the socket.'''
 		while self.parent.runState is True:
@@ -155,8 +155,9 @@ class socketQueue:
 				continue
 			if self.parent.runState is True: # Additional runState check to avoid sending to a closed socket
 				try:
-					self.socket.send((_queueItem).encode(self.encoding))
-					self.ircLog.notifySocketLogs(_queueItem.replace('\r\n','')) # Log socket send
+					self.socket.send((_queueItem[0]).encode(self.encoding))
+					if _queueItem[1]: # Report to socket log watchers unless explicitly told not to
+						self.ircLog.notifySocketLogs(_queueItem[0].replace('\r\n','')) # Log socket send
 				except BrokenPipeError:
 					self.parent.runState = False
 		self.parent.socketShutdown()
