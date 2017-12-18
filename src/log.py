@@ -112,8 +112,10 @@ class ircLogGroup:
         '''Spawns two basicLogger objects for socket and server logging.'''
         self.serverLog = basicLogger(os.path.join(self.serverLogPath, self.kwargs.get('serverLogFile') or 'server_log.log'))
         self.socketLog = basicLogger(os.path.join(self.serverLogPath, self.kwargs.get('socketLogFile') or 'socket_log.log'))
-    def logChannelData(self, channel, line):
+    def logChannelData(self, *args):
         '''Creates logger for channel if it does not exist, otherwise logs line to appropriate logger.'''
+        channel = args[0]
+        line = args[1]
         if not channel in self.channelLogs: # Log object for this channel needs to be created
             channelLog = channelLogger(os.path.join(self.channelLogPath, channel), **self.kwargs)
             self.channelLogs[channel] = channelLog
