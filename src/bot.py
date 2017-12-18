@@ -70,7 +70,7 @@ class bot:
 				self.logger.exception(e)
 		self.logger.debug("Loaded Modules: %s", self.command_list)
 		for module in self.module_list:
-			t = threading.Thread(target=module.run, name="module_"+module.__name__, args=(self.ircLogger, self.logger, self.socketWrapper, self.commandWrapper))
+			t = threading.Thread(target=module.run, name="module_"+module.__name__, args=(self.ircLogger, self.logger, self.socketWrapper, self.commandWrapper, self.socketWrapper.runState))
 			t.start()
 	def parse(self, line):
 		'''Deal with lines coming off the socket.'''
