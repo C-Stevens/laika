@@ -1,7 +1,7 @@
 from src.argument import *
 
 def run(self, **kwargs):
-	self.socket.channelMode(channel, "-v", kwargs.get('nick') or self.commandData.nick)
+	self.socket.channelMode(kwargs.get('channel'), "-v", kwargs.get('nick') or self.commandData.nick)
 
 config = {
 	'name' : 'Devoice',
