@@ -213,10 +213,14 @@ Laika cannot cleanly implement every feature a bot operator might want. In order
 * The bot's `irc.socketConnection` object.
 * The bot's command manager, a `command.commandManager` object.
 
-The only stipulation expected from module files is that they have a `run()` function that is able to receive these above arguments, which most likely will look like this:
+The only stipulation for modules is that they have a `run()` to be accessed at thread creation time, and a `shutdown()` method to be accessed when the bot is exiting.
+
+The `run()` method will be the entry point into the module, and can have whatever functionality is desired but must be able to accept the variables passed to it as described above. A general `run()` method should look something like this:
 ```python
 def run(*args):
 ```
+
+The `shutdown()` method is called on all successfully loaded modules right before the bot exists and given no parameters. This allows modules an opprotunity to clean up threads, save volatile data, exit gracefully, or otherwise handle any tasks that must be completed before the main bot exits.
 
 ##Writing Commands
 Laika was designed from the start to make writing commands quick and easy. All `.py` files located in `[...]/laika/commands` are loaded as commands at launch time, so adding or removing a command requires a restart of the bot.
