@@ -366,9 +366,8 @@ Laika was written by [Colin Stevens](https://colinjstevens.com).
 I can be reached at [mail@colinjstevens.com](mailto:mail@colinjstevens.com)
 
 
-##TODO
+## TODO
 * ~~Variable length `highlightChar` prefix.~~
-* Make `readQueue()` function useful.
 * ~~Flush command to empty command thread pool.~~
 * ~~Config value to set thread pool size.~~
 * ~~Add module functionality.~~
