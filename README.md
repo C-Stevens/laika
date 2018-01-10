@@ -1,7 +1,7 @@
-#Laika
+# Laika
 Laika is an extensible bot written in Python for the IRC protocol. Laika is principled upon concurrency, threading, ease of use, and easy command writing.
 
-#####Table of Contents
+##### Table of Contents
 * [Quickstart](#quickstart)
 * [Configuration](#configuration)
     * [Laika.cfg](#laikacfg)
@@ -29,7 +29,7 @@ Laika is an extensible bot written in Python for the IRC protocol. Laika is prin
 * [Author](#author)
 * [TODO](#todo)
 
-##Quickstart
+## Quickstart
 Laika makes use of the [`pyyaml`](https://github.com/yaml/pyyaml) library as a git submodule. As such, git needs to be supplied the `recursive` flag to ensure proper configuration file loading.
 To get started, first clone the repository:
 ```Bash
@@ -53,17 +53,17 @@ For arguments, reference the [command line arguments](#command-line-arguments) s
 If python is raising syntax related errors on first-run, ensure your python version is at least version `3.4.3`.
 
 
-##Configuration
+## Configuration
 Laika uses one configuration file for itself to set up how the program logs messages, and any number of bot configuration files for starting bot objects.
 
 **NOTE:** While filling config files, keep in mind that yaml will treat `None` as a string ('None'), and not as python's `NoneType`. To specify `None`, use either `null`, or leave the value blank.
-####Laika.cfg
+#### Laika.cfg
 This configuration file is used to specify how the program will log various messages. The values here do **not** affect how bot objects themselves will log messages.
 
 An alternate or explicit config file can be specified with the `--config` argument (For more information of command arguments, see the [argument section](#Command-Line-Arguments)), so long as it is parseable by [`pyyaml`](https://github.com/yaml/pyyaml). If an alternate configuration file is not supplied at run time, Laika will look for a `laika.cfg` file in the current directory ('.'). This means it will search for whatever the current shell directory is for a `laika.cfg` file, not necessarily the Laika project directory. 
 
 
-######Configuration values:
+###### Configuration values:
 * `defaultFormat`: This is the default logging format log levels will use if not explicitly provided with any of the below log format options. By default, this is `%(asctime)s - %(name)s - %(levelname)s - %(message)s`
 * `critLog`: Boolean option to enable or disable logging for critical messages. Defaults to `True`.
 * `critLogDir`: Specifies a directory to log critical messages to. If `null` or left blank, it will default to send messages to the terminal.
@@ -81,7 +81,7 @@ An alternate or explicit config file can be specified with the `--config` argume
 * `debugLogDir`: Specifies a directory to log debug messages to. If `null` or left blank, it will default to send messages to the terminal.
 * `debugLogFormat`: Specifies an explicit logging format for debug messages. For more information on logging formats, view the [log.py documentation](doc/log.py.md), and python's [logging documentation](https://docs.python.org/3.4/howto/logging-cookbook.html#use-of-alternative-formatting-styles).
 
-######Example configuration:
+###### Example configuration:
 ```yaml
 defaultFormat   : "%(message)s"
 critLog         : True
@@ -101,14 +101,14 @@ debugLogDir     :
 debugLogFormat  : "[%(levelname)s] %(message)s"
 ```
 
-####Bot configurations
+#### Bot configurations
 Laika will load a theoretically infinite number of valid configuration files from inside `[...]/laika/config` and will load each as a separate bot object on an individual thread.
 
 For a bot to be loaded, the configuration file must be parseable by [`pyyaml`](https://github.com/yaml/pyyaml), be located in `[...]/laika/config/`, and end with a `.yaml` extension.
 
 Unlike Laika's program logging and the various levels of bot logging, bot objects are allowed to log in any number of locations at the same time. Logging details are supplied as sections under the `ircLog` section. Each section will configure a [`log.ircLogGroup()` object](doc/log.py.md) and be sent relevant logging data.
 
-######Configuration values:
+###### Configuration values:
 * `server` : This section specifies how the bot will connect with the IRC server.
     * `host` : The URL or IP address to the IRC server.
     * `port` : The port on which to connect.
@@ -134,7 +134,7 @@ Unlike Laika's program logging and the various levels of bot logging, bot object
     * `timeStampFormat` : How timestamps will appear in channel logs. This can either be a raw string and function as a prefix, or you can supply [`strftime` formats](https://docs.python.org/3.4/library/time.html#time.strftime). It's safer to wrap this value in quotes so yaml does not attempt to parse any characters (`%`, for example) as yaml-specific. If `null` or left blank, will default to `[%Y-%m-%d %H:%M:%S]`.
     * `messageFormat` : How messages will appear after the `timeStampFormat` prefix. values for nickname and message are passed to this string, if you so wish to use them. If `null` or left blank, will default to `<%(nick)s> %(msg)s`. 
 
-######Example configuration:
+###### Example configuration:
 ```yaml
 server:
         host : irc.example.net
@@ -193,20 +193,20 @@ ircLog:
 ```
 
 
-##Command Line Arguments
+## Command Line Arguments
 Laika can accept a small handful of command line arguments, and the complete set of program logging values can be replaced with command line arguments. If a command line argument is specified that also exists in a loaded configuration file, the command line argument will be given precedence and replace the value when creating the program logs.
 
 It should be noted that Laika requires loading a *full* config file, even if all values are replaced by command line arguments. This can either be the default `laika.cfg` file or a file specified with the `--config` argument.
 
 Laika has a built in help flag which can print complete usage information by supppplying the `-h` or `--help` flags.
 
-######Some notable arguments
+###### Some notable arguments
 * `--version` : Prints program version information and exits.
 * `-q`,`--quiet` : Will override both config file values and supplied values from arguments and force all program logs to be silent. This does *not* apply to logging done by individual bots or their objects.
 * `--config` : A full path to an alternate program config file. This will act as the loaded configuration file in lieu of the default `laika.cfg`. The same precedence and replacement rules of supplied command line config values still apply to configuration files supplied with this argument.
 * `--critLog`, `--errLog`, `--warnLog`, `--infoLog`, `--debugLog` : These are boolean flags that must be explicitly be set to a case insensitive `'True'`, `'t'`, `'yes'`, or `1` for `True` and likewise `'False'`,`'f'`,`'no'`, or `0` for `False`. If something other than these values is supplied, these flags will be silently ignored.
 
-##Modules
+## Modules
 Laika cannot cleanly implement every feature a bot operator might want. In order to keep the source code for Laika sane but also allow even more freedom for bot operators to implement their own features and functionality, Laika comes with a modules feature. Modules are `.py` files loaded from inside `./modules` that are spawned on their own individual threads, and provided with the following objects as arguments:
 * The bot's IRC logging manager, a `log.ircLogManager` object.
 * The bot's logging object, a `log.logger` object.
@@ -241,14 +241,14 @@ config = {
     'help : ''
 }
 ```
-######Configuration values:
+###### Configuration values:
 * `name` : This is the user-friendly name of the command that appears on generated help usage for the command.
 * `command_str` : A string used to identify if the command is being called or not.
 * `args` : Custom type Arguments used to regex match various string types. More information about these arguments is mentioned later, and also in [argument.py's documentation](doc/argument.py.md).
 * `auth` : Boolean value to indicate whether or not the command issuer needs to be in the `authlist` list to run the command. The command will not run if this is set to `False`, and the user is not in the `authList` list.
 * `help` : General information about what the command does and/or how it functions. This is used in generated help usage for the command.
 
-######Example Configuration Dict:
+###### Example Configuration Dict:
 ```python
 config = {
 	'name' : 'Echo',
@@ -273,7 +273,7 @@ Commands themselves are not objects, but their `run()` function is called direct
 * `self.parent` : A method of accessing the command thread's parent, the [`commandManager()`](doc/command.py.md) object. Through this, values and methods under the `commandManager()` object can be accessed.
 * Any methods in the [`commandThread`](doc/command.py.md) object are accessible as well.
 
-#####Arguments
+##### Arguments
 Laika comes with a sophisticated set of custom argument data types that use regex to validate and match data specified after the command when it's issued.
 These arguments are detailed in [argument.py's documentation](doc/argument.py.md), but below will serve as a general guide to using them.
 
@@ -298,14 +298,14 @@ in the above `echo.py` configuration, a valid match for a channel name would be 
 
 If you don't wish to use Laika's custom argument types, you can specify a single argument of type `msg`. Everything after the command will match to this argument, and the entire string will be returned to the command. From there, you can parse this string however you wish.
 
-#####Potential Behaviors
+##### Potential Behaviors
 Each command is spawned on its own thread and will run concurrently alongside other command threads if more than one command is issued or running at the same time. There is no timeout for how long commands can exist, but each IRC user is given a thread pool max size of `5` by default, or can be configured with the `threadPoolSize` value in a bot's configuration file. If your command fatally crashes and raises an exception, the thread and command will die, but be removed from the thread pool. However, if your command results in an infinite loop that will never exit, fatally or otherwise, the thread will remain in the user's thread pool until the bot is restarted. As of version 1.1, the number of running commands can be queried with the [`runningcommands`](commands/runningcommands.py) command, and a user's thread pool can be cleared by users who are in the `authList` list with the [`flushcommands`](commads/flushcommands.py) command.
 
 More details on how commands are spawned and how the thread pool is managed can be found in `command.py`'s [documentation](doc/command.py.md).
 
 When a command attempts to run, several outcomes are possible. These outcomes usually have some kind of log message or built in notification with an IRC notice, but are listed below for the sake of documentation.
 
-######Thread Pool Maxed
+###### Thread Pool Maxed
 If a user attempts to issue a command while they currently have the maximum number of allowed command threads running at one time (By default: `5`), the command will be refused and the user will be issued the following IRC notice:
 
 > Maximum number of pending commands (`<thread pool size>`) reached. Command `<name of command attempted>` has been ignored.
@@ -316,24 +316,24 @@ Additionally, the bot operator is made aware that a user has filled their thread
 
 This log message is of level `warning`.
 
-######User Not Authorized
+###### User Not Authorized
 If a user attempts to issue a command that has the `auth` value in the command's `config` dict set to `True` and their nickname is not in the `authList` list, the command will be refused and the user will be issued the following IRC notice:
 
 > You are not authorized to use the `<name of command attempted>` command
 
 This message is not logged anywhere else.
 
-######CommandError: No Arguments Supplied
+###### CommandError: No Arguments Supplied
 If the `args` key in a command's `config` dict is non-empty but no *non-optional* arguments were passed to the command, it will raise a `commandError` with the following detail string:
 
 > Command requested arguments but received none.
 
-######CommandError: Arguments Supplied When None Requested
+###### CommandError: Arguments Supplied When None Requested
 If the `args` key in a command's `config` dict is empty but the command was supplied with arguments, it will raise a `commandError` with the following detail string:
 
 > Command requested no arguments but arguments were received.
 
-######CommandError: Regex Matching Failed
+###### CommandError: Regex Matching Failed
 If the result of the regex match applied to the arguments results in `None` and the command expected at least one non-optional argument to match, it will raise a `commandError` with the following detail string:
 
 > Command failed to match arguments.
@@ -346,21 +346,21 @@ In the event a command raises an exception other than `commandError`, its name a
 
 In this event, the command thread is removed from the thread pool and the thread exits.
 
-##Help
+## Help
 For more information and documentation, you can view complete documentation for most of Laika's files in the [doc](doc) folder.
 
 For command specific help, Laika comes prepackaged with a [help command](commands/help.py), which can be used to generate help and usage information for commands. This functionality is only available while interacting with the bot through IRC.
 
 
-##License
+## License
 For licensing information, refer to the [LICENSE](LICENSE) file.
 
 
-##Version and Changelog
+## Version and Changelog
 Version information for the current release, and a changelog is available in the [version](_version.py) file.
 
 
-##Author
+## Author
 Laika was written by [Colin Stevens](https://colinjstevens.com).
 
 I can be reached at [mail@colinjstevens.com](mailto:mail@colinjstevens.com)
